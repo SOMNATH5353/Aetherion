@@ -26,3 +26,4 @@ if response["media_type"] == "image":
     img.show()
 else:
     print("🎥 This is a video. Open in browser:", response["url"])
+    print("somnath")
