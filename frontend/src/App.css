@@ -1,128 +1,29 @@
-/* Global Styles */
+/* Global Reset */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-html, body {
+html, body, #root {
   margin: 0;
   padding: 0;
   width: 100%;
-  overflow-x: hidden;
+  height: 100%;
+  overflow: hidden;
+  background: #000000;
 }
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-  background: linear-gradient(135deg, #000000 0%, #1a1a2e 50%, #000000 100%);
-  min-height: 100vh;
-  line-height: 1.6;
   color: white;
+  background: #000000 !important;
 }
 
 .App {
-  overflow-x: hidden;
-  width: 100%;
-  margin: 0;
-  padding: 0;
-}
-
-/* Remove any Bootstrap container margins that might interfere */
-.container-fluid {
-  padding: 0 !important;
-  margin: 0 !important;
-}
-
-/* Main Content */
-.main-content {
-  margin-top: 70px;
-  min-height: calc(100vh - 70px);
-  width: 100%;
-}
-
-/* Container */
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem;
-}
-
-/* Content Sections */
-.content-section {
-  padding: 4rem 0;
-  text-align: center;
   position: relative;
-  background: radial-gradient(circle at center, rgba(0, 255, 255, 0.05) 0%, transparent 70%);
-}
-
-.content-section:nth-child(even) {
-  background: radial-gradient(circle at center, rgba(128, 0, 255, 0.05) 0%, transparent 70%);
-}
-
-.content-section h1 {
-  font-size: 3.5rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  background: linear-gradient(135deg, #00ffff, #0080ff, #8000ff);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
-}
-
-.content-section h2 {
-  font-size: 2.5rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  color: #00ffff;
-  text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-}
-
-.content-section p {
-  font-size: 1.2rem;
-  opacity: 0.9;
-  max-width: 600px;
-  margin: 0 auto;
-  line-height: 1.8;
-}
-
-/* Responsive Design */
-@media screen and (max-width: 768px) {
-  .main-content {
-    margin-top: 60px;
-  }
-
-  .content-section h1 {
-    font-size: 2.5rem;
-  }
-
-  .content-section h2 {
-    font-size: 2rem;
-  }
-
-  .content-section p {
-    font-size: 1rem;
-  }
-
-  .content-section {
-    padding: 3rem 0;
-  }
-
-  .container {
-    padding: 0 1rem;
-  }
-}
-
-@media screen and (max-width: 480px) {
-  .content-section h1 {
-    font-size: 2rem;
-  }
-
-  .content-section h2 {
-    font-size: 1.8rem;
-  }
-
-  .content-section p {
-    font-size: 0.9rem;
-  }
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #000000;
 }
