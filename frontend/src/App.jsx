@@ -1,12 +1,12 @@
 import React from 'react';
 import Navbar from './components/Navbar';
-import Galaxy from './components/Galaxy';
+import SpaceAnimation from './components/SpaceAnimation';
 import './App.css';
 
 const App = () => {
   return (
     <div className="App">
-      <Galaxy />
+      <SpaceAnimation />
       <Navbar />
     </div>
   );

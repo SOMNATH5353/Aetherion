@@ -1,0 +1,349 @@
+.space-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #000000;
+  overflow: hidden;
+  z-index: 1;
+}
+
+/* Stars Layer */
+.stars-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.star {
+  position: absolute;
+  background: #ffffff;
+  border-radius: 50%;
+  animation: starTwinkle 3s ease-in-out infinite alternate;
+  box-shadow: 
+    0 0 2px rgba(255, 255, 255, 0.6), /* Reduced from 6px */
+    0 0 4px rgba(255, 255, 255, 0.4), /* Reduced from 12px */
+    0 0 6px rgba(255, 255, 255, 0.2); /* Reduced from 18px */
+}
+
+@keyframes starTwinkle {
+  0% {
+    opacity: 0.5; /* Increased from 0.3 */
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1); /* Reduced from 1.2 */
+  }
+  100% {
+    opacity: 0.7; /* Increased from 0.6 */
+    transform: scale(1);
+  }
+}
+
+/* Royal Stars Layer */
+.royal-stars-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+}
+
+.royal-star {
+  position: absolute;
+  width: 6px; /* Reduced from 8px */
+  height: 6px; /* Reduced from 8px */
+  background: radial-gradient(circle, 
+    rgba(255, 255, 255, 1) 0%, 
+    rgba(255, 255, 255, 0.6) 50%, /* Reduced opacity */
+    transparent 100%);
+  border-radius: 50%;
+  box-shadow: 
+    0 0 4px rgba(255, 255, 255, 0.8), /* Reduced from 10px */
+    0 0 8px rgba(255, 255, 255, 0.5), /* Reduced from 20px */
+    0 0 12px rgba(255, 255, 255, 0.3), /* Reduced from 30px */
+    0 0 16px rgba(255, 255, 255, 0.2); /* Reduced from 40px */
+}
+
+.royal-star::before,
+.royal-star::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  background: rgba(255, 255, 255, 0.5); /* Reduced opacity */
+  transform: translate(-50%, -50%);
+}
+
+.royal-star::before {
+  width: 12px; /* Reduced from 20px */
+  height: 0.5px; /* Reduced from 1px */
+}
+
+.royal-star::after {
+  width: 0.5px; /* Reduced from 1px */
+  height: 12px; /* Reduced from 20px */
+}
+
+/* Shooting Stars Layer */
+.shooting-stars-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+}
+
+.shooting-star {
+  position: absolute;
+  width: 3px; /* Reduced from 4px */
+  height: 3px; /* Reduced from 4px */
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 
+    0 0 3px rgba(255, 255, 255, 0.8), /* Reduced from 6px */
+    0 0 6px rgba(255, 255, 255, 0.5); /* Reduced from 12px */
+}
+
+.shooting-star::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 100%;
+  width: 30px; /* Reduced from 50px */
+  height: 0.5px; /* Reduced from 1px */
+  background: linear-gradient(to left, 
+    rgba(255, 255, 255, 0.8) 0%, /* Reduced opacity */
+    rgba(255, 255, 255, 0.5) 50%, /* Reduced opacity */
+    transparent 100%);
+  transform: translateY(-50%);
+}
+
+/* Royal Overlay */
+.royal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* Luxury Shimmer Effects - MADE MUCH SMALLER */
+.luxury-shimmer {
+  position: absolute;
+  width: 0.5px; /* Reduced from 1px */
+  height: 40%; /* Reduced from 60% */
+  top: 30%; /* Adjusted center */
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(255, 255, 255, 0.02) 45%, /* Much lower opacity */
+    rgba(255, 255, 255, 0.08) 50%, /* Much lower opacity */
+    rgba(255, 255, 255, 0.02) 55%, /* Much lower opacity */
+    transparent 100%
+  );
+  filter: blur(0.2px); /* Reduced blur */
+}
+
+.shimmer-1 {
+  left: 15%;
+}
+
+.shimmer-2 {
+  right: 25%;
+}
+
+/* Royal Vignette */
+.royal-vignette {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 0%,
+    transparent 70%,
+    rgba(0, 0, 0, 0.1) 85%,
+    rgba(0, 0, 0, 0.3) 100%
+  );
+}
+
+/* Corner Sparkles - MADE MUCH SMALLER */
+.corner-sparkle {
+  position: absolute;
+  width: 8px; /* Reduced from 12px */
+  height: 8px; /* Reduced from 12px */
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.4) 0%, /* Reduced opacity */
+    rgba(255, 255, 255, 0.2) 50%, /* Reduced opacity */
+    transparent 100%
+  );
+  border-radius: 50%;
+  filter: blur(0.3px); /* Reduced blur */
+}
+
+.top-left {
+  top: 10%;
+  left: 10%;
+}
+
+.top-right {
+  top: 15%;
+  right: 15%;
+}
+
+.bottom-left {
+  bottom: 20%;
+  left: 12%;
+}
+
+.bottom-right {
+  bottom: 10%;
+  right: 8%;
+}
+
+/* Performance Optimizations */
+.space-container {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Clean Typography */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 1200px) {
+  .luxury-shimmer {
+    width: 0.4px; /* Even smaller */
+    height: 35%;
+  }
+  
+  .corner-sparkle {
+    width: 6px; /* Reduced */
+    height: 6px; /* Reduced */
+  }
+  
+  .royal-star {
+    width: 5px; /* Reduced */
+    height: 5px; /* Reduced */
+  }
+  
+  .royal-star::before {
+    width: 10px; /* Reduced */
+  }
+  
+  .royal-star::after {
+    height: 10px; /* Reduced */
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .luxury-shimmer {
+    width: 0.3px; /* Even smaller */
+    height: 30%;
+  }
+  
+  .corner-sparkle {
+    width: 5px; /* Reduced */
+    height: 5px; /* Reduced */
+  }
+  
+  .royal-star {
+    width: 4px; /* Reduced */
+    height: 4px; /* Reduced */
+  }
+  
+  .royal-star::before {
+    width: 8px; /* Reduced */
+  }
+  
+  .royal-star::after {
+    height: 8px; /* Reduced */
+  }
+  
+  .royal-vignette {
+    background: radial-gradient(
+      ellipse at center,
+      transparent 0%,
+      transparent 60%,
+      rgba(0, 0, 0, 0.2) 80%,
+      rgba(0, 0, 0, 0.4) 100%
+    );
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .luxury-shimmer {
+    width: 0.2px; /* Smallest */
+    height: 25%;
+  }
+  
+  .corner-sparkle {
+    width: 4px; /* Smallest */
+    height: 4px; /* Smallest */
+  }
+  
+  .royal-star {
+    width: 3px; /* Smallest */
+    height: 3px; /* Smallest */
+  }
+  
+  .royal-star::before {
+    width: 6px; /* Smallest */
+  }
+  
+  .royal-star::after {
+    height: 6px; /* Smallest */
+  }
+  
+  .shooting-star {
+    width: 2px;
+    height: 2px;
+  }
+  
+  .shooting-star::before {
+    width: 20px; /* Reduced */
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .luxury-shimmer {
+    animation: none;
+  }
+  
+  .corner-sparkle {
+    animation: none;
+  }
+  
+  .star {
+    animation: none;
+  }
+}
+
+/* Hardware Acceleration */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
