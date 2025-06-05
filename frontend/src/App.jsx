@@ -1,15 +1,29 @@
 import React from 'react';
 import Navbar from './components/Navbar';
+import './App.css';
 
 const App = () => {
   return (
-    <>
+    <div className="App">
       <Navbar />
-      <div style={{ paddingTop: '80px', padding: '20px' }}>
-        <h2>Welcome to Aetherion</h2>
-        <p>Explore the cosmos with our AI-powered astronomy image analyzer.</p>
-      </div>
-    </>
+      
+      {/* Simple content to demonstrate navbar functionality */}
+      <main className="main-content">
+        <section className="content-section">
+          <div className="container">
+            <h1>Welcome to Aetherion</h1>
+            <p>Explore the infinite possibilities of space technology</p>
+          </div>
+        </section>
+        
+        <section className="content-section">
+          <div className="container">
+            <h2>Our Mission</h2>
+            <p>Pushing the boundaries of space exploration and innovation</p>
+          </div>
+        </section>
+      </main>
+    </div>
   );
 };
 
