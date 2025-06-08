@@ -5,6 +5,7 @@ import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import About from './components/About';
 import Gallery from './components/Gallery';
+import Footer from './components/Footer';
 import SpaceAnimation from './components/SpaceAnimation';
 
 function App() {
@@ -65,6 +66,9 @@ function App() {
           {/* Gallery Page */}
           <Route path="/gallery" element={<Gallery />} />
         </Routes>
+        
+        {/* Footer - Always Present */}
+        <Footer />
       </div>
     </Router>
   );
