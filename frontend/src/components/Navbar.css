@@ -1,3 +1,6 @@
+/* Import futuristic fonts */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+
 /* Space Theme Navbar Styles */
 .navbar {
   position: fixed;
@@ -9,7 +12,7 @@
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 2px solid rgba(64, 224, 208, 0.3);
-  z-index: 1000;
+  z-index: 9999;
   transition: all 0.3s ease;
   box-shadow: 
     0 4px 30px rgba(0, 0, 0, 0.8),
@@ -37,7 +40,7 @@
   gap: 2rem;
 }
 
-/* Enhanced AETHERION Logo with Space Gradient */
+/* Enhanced AETHERION Logo with New Futuristic Font */
 .nav-logo {
   display: flex;
   align-items: center;
@@ -49,27 +52,31 @@
 
 .logo-text {
   position: relative;
-  font-size: 2rem;
+  font-family: 'Orbitron', 'Exo 2', 'Rajdhani', sans-serif; /* New futuristic fonts */
+  font-size: 2.2rem; /* Slightly larger */
   font-weight: 900;
-  background: linear-gradient(135deg, #00D4FF, #0099CC, #6633FF, #9966FF);
-  background-size: 300% 300%;
+  background: linear-gradient(135deg, #00D4FF, #0099CC, #6633FF, #9966FF, #FF6B6B);
+  background-size: 400% 400%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  letter-spacing: 3px;
+  letter-spacing: 4px; /* Increased letter spacing for futuristic look */
   transition: all 0.4s ease;
-  animation: logoGradientFlow 4s ease-in-out infinite;
-  filter: drop-shadow(0 0 20px rgba(64, 224, 208, 0.4));
+  animation: logoGradientFlow 5s ease-in-out infinite;
+  filter: drop-shadow(0 0 25px rgba(64, 224, 208, 0.5));
+  text-transform: uppercase; /* All caps for tech feel */
 }
 
 @keyframes logoGradientFlow {
   0%, 100% { 
     background-position: 0% 50%;
     transform: scale(1);
+    letter-spacing: 4px;
   }
   50% { 
     background-position: 100% 50%;
-    transform: scale(1.05);
+    transform: scale(1.08);
+    letter-spacing: 5px;
   }
 }
 
@@ -91,9 +98,9 @@
 
 .particle {
   position: absolute;
-  font-size: 12px;
-  color: rgba(64, 224, 208, 0.8);
-  animation: particleOrbit 8s linear infinite;
+  font-size: 14px;
+  color: rgba(64, 224, 208, 0.9);
+  animation: particleOrbit 10s linear infinite;
 }
 
 .p1 {
@@ -105,31 +112,31 @@
 .p2 {
   top: 10%;
   right: 10%;
-  animation-delay: 2s;
+  animation-delay: 2.5s;
 }
 
 .p3 {
   bottom: 10%;
   left: 10%;
-  animation-delay: 4s;
+  animation-delay: 5s;
 }
 
 .p4 {
   bottom: 10%;
   right: 10%;
-  animation-delay: 6s;
+  animation-delay: 7.5s;
 }
 
 @keyframes particleOrbit {
   0% { 
-    transform: rotate(0deg) translateX(30px) rotate(0deg);
+    transform: rotate(0deg) translateX(35px) rotate(0deg);
     opacity: 0;
   }
   25%, 75% { 
     opacity: 1;
   }
   100% { 
-    transform: rotate(360deg) translateX(30px) rotate(-360deg);
+    transform: rotate(360deg) translateX(35px) rotate(-360deg);
     opacity: 0;
   }
 }
@@ -138,31 +145,31 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 200%;
-  height: 200%;
+  width: 220%;
+  height: 220%;
   background: radial-gradient(circle, 
-    rgba(64, 224, 208, 0.1) 0%, 
-    rgba(0, 153, 204, 0.05) 30%, 
+    rgba(64, 224, 208, 0.15) 0%, 
+    rgba(0, 153, 204, 0.08) 30%, 
     transparent 70%);
   transform: translate(-50%, -50%);
-  animation: energyField 5s ease-in-out infinite;
+  animation: energyField 6s ease-in-out infinite;
 }
 
 @keyframes energyField {
   0%, 100% { 
     transform: translate(-50%, -50%) scale(0.5);
-    opacity: 0.3;
+    opacity: 0.4;
   }
   50% { 
-    transform: translate(-50%, -50%) scale(1.5);
-    opacity: 0.8;
+    transform: translate(-50%, -50%) scale(1.8);
+    opacity: 0.9;
   }
 }
 
 .logo-icon {
-  font-size: 2rem;
-  filter: drop-shadow(0 0 15px rgba(64, 224, 208, 0.7));
-  animation: rocketFloat 3s ease-in-out infinite;
+  font-size: 2.2rem;
+  filter: drop-shadow(0 0 20px rgba(64, 224, 208, 0.8));
+  animation: rocketFloat 4s ease-in-out infinite;
 }
 
 @keyframes rocketFloat {
@@ -170,7 +177,7 @@
     transform: translateY(0px) rotate(0deg);
   }
   50% { 
-    transform: translateY(-10px) rotate(10deg);
+    transform: translateY(-12px) rotate(15deg);
   }
 }
 
@@ -197,8 +204,9 @@
   border: 2px solid rgba(255, 255, 255, 0.2);
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(10px);
-  overflow: visible; /* Changed from hidden to visible for external spacecraft */
+  overflow: visible;
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  font-family: 'Rajdhani', sans-serif; /* Consistent futuristic font */
 }
 
 .link-text {
@@ -213,7 +221,7 @@
 .spacecraft-trail {
   position: absolute;
   top: 50%;
-  left: -60px; /* Start position outside the left border */
+  left: -60px;
   transform: translateY(-50%);
   opacity: 0;
   transition: all 0.3s ease;
@@ -249,7 +257,7 @@
   animation: spacecraftExternalOrbit 3s ease-in-out infinite;
 }
 
-/* New External Orbit Animation */
+/* External Orbit Animation */
 @keyframes spacecraftExternalOrbit {
   0% {
     left: -60px;
@@ -286,7 +294,6 @@
   }
 }
 
-/* Add orbital trail effect */
 .nav-link:hover .spacecraft-trail::before {
   content: '';
   position: absolute;
@@ -312,7 +319,6 @@
   }
 }
 
-/* Add glowing effect that follows the spacecraft */
 .nav-link:hover .spacecraft-trail::after {
   content: '';
   position: absolute;
@@ -351,6 +357,7 @@
   transition: all 0.3s ease;
   border: 2px solid rgba(64, 224, 208, 0.3);
   background: rgba(64, 224, 208, 0.1);
+  z-index: 10000;
 }
 
 .nav-toggle:hover {
@@ -384,6 +391,7 @@
     gap: 1rem;
     border-top: 2px solid rgba(64, 224, 208, 0.3);
     box-shadow: 0 10px 50px rgba(64, 224, 208, 0.2);
+    z-index: 9998;
   }
 
   .nav-menu.active {
@@ -397,10 +405,9 @@
     padding: 1.2rem 2rem;
     background: rgba(255, 255, 255, 0.12);
     border: 2px solid rgba(255, 255, 255, 0.3);
-    overflow: hidden; /* Reset overflow for mobile */
+    overflow: hidden;
   }
 
-  /* Simplified spacecraft effect for mobile */
   .nav-link:hover .spacecraft-trail {
     animation: spacecraftMobileFloat 2s ease-in-out infinite;
   }
@@ -427,23 +434,23 @@
   }
 
   .logo-text {
-    font-size: 1.6rem;
-    letter-spacing: 2px;
+    font-size: 1.8rem;
+    letter-spacing: 3px;
   }
 
   .logo-icon {
-    font-size: 1.6rem;
+    font-size: 1.8rem;
   }
 
   .particle {
-    font-size: 10px;
+    font-size: 12px;
   }
 }
 
 @media screen and (max-width: 480px) {
   .logo-text {
-    font-size: 1.4rem;
-    letter-spacing: 1px;
+    font-size: 1.5rem;
+    letter-spacing: 2px;
   }
   
   .nav-container {
@@ -461,11 +468,11 @@
   }
 
   .spacecraft-trail {
-    left: -30px; /* Smaller offset for mobile */
+    left: -30px;
   }
 
   .spacecraft {
-    font-size: 1.4rem; /* Smaller spacecraft on mobile */
+    font-size: 1.4rem;
   }
 }
 

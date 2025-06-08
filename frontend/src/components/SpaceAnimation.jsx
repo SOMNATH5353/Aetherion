@@ -1,209 +1,133 @@
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
 import './SpaceAnimation.css';
 
 const SpaceAnimation = () => {
   const [stars, setStars] = useState([]);
+  const [royalStars, setRoyalStars] = useState([]);
   const [shootingStars, setShootingStars] = useState([]);
 
   useEffect(() => {
-    // Generate background stars
+    // Generate regular stars
     const generateStars = () => {
-      const starArray = [];
-      for (let i = 0; i < 1000; i++) {
-        starArray.push({
+      const newStars = [];
+      for (let i = 0; i < 150; i++) {
+        newStars.push({
           id: i,
-          x: Math.random() * 100,
-          y: Math.random() * 100,
+          left: Math.random() * 100,
+          top: Math.random() * 100,
           size: Math.random() * 3 + 1,
-          opacity: Math.random() * 0.8 + 0.2,
-          animationDelay: Math.random() * 5,
-          animationDuration: Math.random() * 3 + 2,
+          animationDelay: Math.random() * 3,
+          animationDuration: Math.random() * 2 + 2
         });
       }
-      setStars(starArray);
+      setStars(newStars);
+    };
+
+    // Generate royal stars (special bright stars)
+    const generateRoyalStars = () => {
+      const newRoyalStars = [];
+      for (let i = 0; i < 12; i++) {
+        newRoyalStars.push({
+          id: i,
+          left: Math.random() * 100,
+          top: Math.random() * 100,
+          animationDelay: Math.random() * 5
+        });
+      }
+      setRoyalStars(newRoyalStars);
     };
 
     // Generate shooting stars
     const generateShootingStars = () => {
-      const shootingArray = [];
-      for (let i = 0; i < 8; i++) {
-        shootingArray.push({
+      const newShootingStars = [];
+      for (let i = 0; i < 3; i++) {
+        newShootingStars.push({
           id: i,
-          delay: i * 3 + Math.random() * 2,
-          duration: Math.random() * 2 + 1,
-          startY: Math.random() * 50 + 10,
+          left: Math.random() * 100,
+          top: Math.random() * 50,
+          animationDelay: Math.random() * 8 + 2,
+          animationDuration: Math.random() * 3 + 2
         });
       }
-      setShootingStars(shootingArray);
+      setShootingStars(newShootingStars);
     };
 
     generateStars();
+    generateRoyalStars();
     generateShootingStars();
+
+    // Regenerate shooting stars periodically
+    const shootingStarInterval = setInterval(() => {
+      generateShootingStars();
+    }, 10000);
+
+    return () => clearInterval(shootingStarInterval);
   }, []);
 
   return (
     <div className="space-container">
-      {/* Background Stars */}
+      {/* Stars Layer */}
       <div className="stars-layer">
-        {stars.map((star) => (
+        {stars.map(star => (
           <div
             key={star.id}
             className="star"
             style={{
-              left: `${star.x}%`,
-              top: `${star.y}%`,
+              left: `${star.left}%`,
+              top: `${star.top}%`,
               width: `${star.size}px`,
               height: `${star.size}px`,
-              opacity: star.opacity,
               animationDelay: `${star.animationDelay}s`,
-              animationDuration: `${star.animationDuration}s`,
+              animationDuration: `${star.animationDuration}s`
             }}
           />
         ))}
       </div>
 
-      {/* Featured Royal Stars */}
+      {/* Royal Stars Layer */}
       <div className="royal-stars-layer">
-        {Array.from({ length: 50 }, (_, i) => (
-          <motion.div
-            key={i}
+        {royalStars.map(star => (
+          <div
+            key={star.id}
             className="royal-star"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              scale: [1, 1.5, 1],
-              opacity: [0.6, 1, 0.6],
-              rotate: [0, 180, 360],
-            }}
-            transition={{
-              duration: Math.random() * 4 + 3,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: Math.random() * 2,
+              left: `${star.left}%`,
+              top: `${star.top}%`,
+              animationDelay: `${star.animationDelay}s`
             }}
           />
         ))}
       </div>
 
-      {/* Shooting Stars */}
+      {/* Shooting Stars Layer */}
       <div className="shooting-stars-layer">
-        {shootingStars.map((shootingStar) => (
-          <motion.div
-            key={shootingStar.id}
+        {shootingStars.map(star => (
+          <div
+            key={star.id}
             className="shooting-star"
             style={{
-              top: `${shootingStar.startY}%`,
-            }}
-            initial={{ x: "-100px", opacity: 0 }}
-            animate={{ x: "calc(100vw + 100px)", opacity: [0, 1, 0] }}
-            transition={{
-              duration: shootingStar.duration,
-              repeat: Infinity,
-              delay: shootingStar.delay,
-              ease: "linear",
-              repeatDelay: 5,
+              left: `${star.left}%`,
+              top: `${star.top}%`,
+              animationDelay: `${star.animationDelay}s`,
+              animationDuration: `${star.animationDuration}s`,
+              animation: `shootingStar ${star.animationDuration}s linear infinite`
             }}
           />
         ))}
       </div>
 
       {/* Royal Overlay Effects */}
-      <motion.div 
-        className="royal-overlay"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 2 }}
-      >
-        {/* Luxury Shimmer Effects */}
-        <motion.div 
-          className="luxury-shimmer shimmer-1"
-          animate={{ 
-            x: ["-20px", "100px", "-20px"],
-            opacity: [0, 0.8, 0]
-          }}
-          transition={{ 
-            duration: 8, 
-            repeat: Infinity, 
-            ease: "easeInOut" 
-          }}
-        />
+      <div className="royal-overlay">
+        <div className="luxury-shimmer shimmer-1"></div>
+        <div className="luxury-shimmer shimmer-2"></div>
         
-        <motion.div 
-          className="luxury-shimmer shimmer-2"
-          animate={{ 
-            x: ["20px", "-100px", "20px"],
-            opacity: [0, 0.6, 0]
-          }}
-          transition={{ 
-            duration: 10, 
-            repeat: Infinity, 
-            ease: "easeInOut",
-            delay: 3
-          }}
-        />
+        <div className="corner-sparkle top-left"></div>
+        <div className="corner-sparkle top-right"></div>
+        <div className="corner-sparkle bottom-left"></div>
+        <div className="corner-sparkle bottom-right"></div>
         
-        {/* Royal Vignette */}
-        <div className="royal-vignette" />
-        
-        {/* Corner Sparkles */}
-        <motion.div 
-          className="corner-sparkle top-left"
-          animate={{ 
-            scale: [1, 1.5, 1],
-            opacity: [0.3, 1, 0.3]
-          }}
-          transition={{ 
-            duration: 4, 
-            repeat: Infinity, 
-            ease: "easeInOut" 
-          }}
-        />
-        
-        <motion.div 
-          className="corner-sparkle top-right"
-          animate={{ 
-            scale: [1, 1.3, 1],
-            opacity: [0.4, 0.8, 0.4]
-          }}
-          transition={{ 
-            duration: 5, 
-            repeat: Infinity, 
-            ease: "easeInOut",
-            delay: 2
-          }}
-        />
-        
-        <motion.div 
-          className="corner-sparkle bottom-left"
-          animate={{ 
-            scale: [1, 1.4, 1],
-            opacity: [0.2, 0.9, 0.2]
-          }}
-          transition={{ 
-            duration: 6, 
-            repeat: Infinity, 
-            ease: "easeInOut",
-            delay: 4
-          }}
-        />
-        
-        <motion.div 
-          className="corner-sparkle bottom-right"
-          animate={{ 
-            scale: [1, 1.6, 1],
-            opacity: [0.3, 0.7, 0.3]
-          }}
-          transition={{ 
-            duration: 7, 
-            repeat: Infinity, 
-            ease: "easeInOut",
-            delay: 1
-          }}
-        />
-      </motion.div>
+        <div className="royal-vignette"></div>
+      </div>
     </div>
   );
 };

@@ -28,10 +28,18 @@ const Hero = () => {
     fetchAPOD();
   }, []);
 
+  const scrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <section id="home" className="hero">
       <div className="hero-container">
-        <div className="hero-content">
+        {/* Hero Text Section */}
+        <div className="hero-text-section">
           <div className="hero-text">
             <h1 className="hero-title">
               Welcome to 
@@ -45,14 +53,28 @@ const Hero = () => {
               stunning space imagery, and the infinite wonders that await beyond our world.
             </p>
             <div className="hero-buttons">
-              <button className="btn-primary">
+              <button 
+                className="btn-primary"
+                onClick={() => scrollToSection('apod-section')}
+              >
                 <span>Explore Universe</span>
                 <div className="btn-glow"></div>
               </button>
-              <button className="btn-secondary">
+              <button 
+                className="btn-secondary"
+                onClick={() => scrollToSection('about')}
+              >
                 <span>Learn More</span>
               </button>
             </div>
+          </div>
+        </div>
+
+        {/* APOD Visual Section - Below Text */}
+        <div className="hero-visual-section" id="apod-section">
+          <div className="apod-header">
+            <h2 className="apod-section-title">Today's Cosmic Wonder</h2>
+            <div className="title-underline"></div>
           </div>
 
           <div className="hero-visual">
@@ -79,12 +101,22 @@ const Hero = () => {
             {apod && !loading && !error && (
               <div className="apod-container">
                 <div className="apod-image-wrapper">
-                  <img 
-                    src={apod.url} 
-                    alt={apod.title} 
-                    className="apod-image"
-                    loading="lazy"
-                  />
+                  {apod.media_type === 'image' ? (
+                    <img 
+                      src={apod.url} 
+                      alt={apod.title} 
+                      className="apod-image"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <iframe 
+                      src={apod.url}
+                      title={apod.title}
+                      className="apod-video"
+                      frameBorder="0"
+                      allowFullScreen
+                    />
+                  )}
                   <div className="image-overlay"></div>
                 </div>
                 <div className="apod-info">
@@ -99,7 +131,15 @@ const Hero = () => {
                   </p>
                   {apod.explanation && (
                     <p className="apod-description">
-                      {apod.explanation.substring(0, 150)}...
+                      {apod.explanation.length > 200 
+                        ? `${apod.explanation.substring(0, 200)}...` 
+                        : apod.explanation
+                      }
+                    </p>
+                  )}
+                  {apod.copyright && (
+                    <p className="apod-copyright">
+                      © {apod.copyright}
                     </p>
                   )}
                 </div>
