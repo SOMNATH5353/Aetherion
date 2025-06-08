@@ -1,15 +1,21 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import './Gallery.css';
 
 const Gallery = () => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [activeCategory, setActiveCategory] = useState('stars');
+  const [activeCategory, setActiveCategory] = useState('daily');
   const [selectedImage, setSelectedImage] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [dailyImages, setDailyImages] = useState([]);
+  const [lastFetch, setLastFetch] = useState(null);
 
-  // Enhanced categories with more cosmic objects
+  // Add ref for scrolling to gallery
+  const galleryRef = useRef(null);
+
+  // Enhanced categories with daily featured category
   const categories = [
+    { id: 'daily', name: 'Daily Featured', icon: '🌟', description: 'Curated daily selection of stunning space photography' },
     { id: 'stars', name: 'Stars', icon: '⭐', description: 'Brilliant stellar formations across the cosmos' },
     { id: 'blackholes', name: 'Black Holes', icon: '🕳️', description: 'Mysterious cosmic phenomena that bend spacetime' },
     { id: 'planets', name: 'Planets', icon: '🪐', description: 'Worlds within our solar system and beyond' },
@@ -18,507 +24,718 @@ const Gallery = () => {
     { id: 'supernovas', name: 'Supernovas', icon: '💥', description: 'Explosive deaths of massive stars' }
   ];
 
-  // Enhanced image data with 9 images per category
+  // Local image collections organized by category
   const allImages = {
     stars: [
       {
         id: 'star1',
         title: "Betelgeuse Supergiant",
-        description: "One of the largest known stars, a red supergiant in the constellation Orion that could explode as a supernova.",
-        url: "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=800&h=600&fit=crop",
+        description: "One of the largest known stars, a red supergiant in Orion that could explode as a supernova at any time, potentially visible during the day.",
+        url: "/images/stars/betelgeuse.jpg",
+        thumbnail: "/images/stars/thumbs/betelgeuse-thumb.jpg",
         date: "2024-06-01",
-        location: "Orion constellation",
-        distance: "650 light-years"
+        location: "Orion Constellation",
+        distance: "650 light-years",
+        source: "ESO Observatory",
+        telescope: "Very Large Telescope"
       },
       {
         id: 'star2',
-        title: "Sirius Binary System",
-        description: "The brightest star in our night sky, actually a binary star system with a white dwarf companion.",
-        url: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=800&h=600&fit=crop",
+        title: "Rigel Blue Supergiant",
+        description: "A blazing blue supergiant star, one of the most luminous stars visible to the naked eye, outshining our Sun by 120,000 times.",
+        url: "/images/stars/rigel.jpg",
+        thumbnail: "/images/stars/thumbs/rigel-thumb.jpg",
         date: "2024-06-02",
-        location: "Canis Major",
-        distance: "8.6 light-years"
+        location: "Orion Constellation",
+        distance: "860 light-years",
+        source: "Hubble Space Telescope",
+        telescope: "Hubble HST"
       },
       {
         id: 'star3',
-        title: "Vega Star",
-        description: "A bright star that was the northern pole star around 12,000 BCE and will be again around 13,727 CE.",
-        url: "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=800&h=600&fit=crop",
+        title: "Wolf-Rayet Star",
+        description: "An extremely hot and massive star shedding its outer layers at tremendous rates, creating spectacular nebulae around it.",
+        url: "/images/stars/wolf-rayet.jpg",
+        thumbnail: "/images/stars/thumbs/wolf-rayet-thumb.jpg",
         date: "2024-06-03",
-        location: "Lyra constellation",
-        distance: "25 light-years"
+        location: "Cygnus Constellation",
+        distance: "5,000 light-years",
+        source: "ESO Observatory",
+        telescope: "Very Large Telescope"
       },
       {
         id: 'star4',
-        title: "Proxima Centauri",
-        description: "The closest star to our solar system, a red dwarf star with potentially habitable exoplanets.",
-        url: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=800&h=600&fit=crop",
+        title: "Binary Star System",
+        description: "Two stars locked in a cosmic dance, orbiting each other and exchanging material in a spectacular stellar performance.",
+        url: "/images/stars/binary-system.jpg",
+        thumbnail: "/images/stars/thumbs/binary-system-thumb.jpg",
         date: "2024-06-04",
-        location: "Centaurus constellation",
-        distance: "4.24 light-years"
+        location: "Centaurus Constellation",
+        distance: "8,000 light-years",
+        source: "Chandra X-ray Observatory",
+        telescope: "Chandra"
       },
       {
         id: 'star5',
-        title: "Rigel Blue Giant",
-        description: "A blue supergiant star, one of the most luminous stars known in the Milky Way galaxy.",
-        url: "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=800&h=600&fit=crop",
+        title: "Neutron Star Pulsar",
+        description: "The ultra-dense remnant of a massive star, spinning hundreds of times per second and generating powerful magnetic fields.",
+        url: "/images/stars/neutron-star.jpg",
+        thumbnail: "/images/stars/thumbs/neutron-star-thumb.jpg",
         date: "2024-06-05",
-        location: "Orion constellation",
-        distance: "860 light-years"
+        location: "Vela Constellation",
+        distance: "1,000 light-years",
+        source: "Chandra X-ray Observatory",
+        telescope: "Chandra"
       },
       {
         id: 'star6',
-        title: "Alpha Centauri",
-        description: "The closest star system to Earth, consisting of three stars including Proxima Centauri.",
-        url: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=800&h=600&fit=crop",
+        title: "Red Giant Star",
+        description: "An aging star that has expanded to enormous size, beginning its final transformation in the stellar lifecycle.",
+        url: "/images/stars/red-giant.jpg",
+        thumbnail: "/images/stars/thumbs/red-giant-thumb.jpg",
         date: "2024-06-06",
-        location: "Centaurus constellation",
-        distance: "4.37 light-years"
+        location: "Various Constellations",
+        distance: "2,000 light-years",
+        source: "ESO Observatory",
+        telescope: "Very Large Telescope"
       },
       {
         id: 'star7',
-        title: "Polaris North Star",
-        description: "The current pole star of Earth, a yellow supergiant that has guided navigation for centuries.",
-        url: "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=800&h=600&fit=crop",
+        title: "Star Formation Region",
+        description: "A stellar nursery where gravity collapses gas and dust to birth new stars, illuminating the surrounding cosmic clouds.",
+        url: "/images/stars/star-formation.jpg",
+        thumbnail: "/images/stars/thumbs/star-formation-thumb.jpg",
         date: "2024-06-07",
-        location: "Ursa Minor",
-        distance: "433 light-years"
+        location: "Carina Constellation",
+        distance: "7,500 light-years",
+        source: "James Webb Space Telescope",
+        telescope: "JWST"
       },
       {
         id: 'star8',
-        title: "Aldebaran Red Giant",
-        description: "A red giant star and the brightest star in the constellation Taurus, following the Pleiades cluster.",
-        url: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=800&h=600&fit=crop",
+        title: "Massive Star Cluster",
+        description: "Thousands of young, hot stars born from the same cosmic cloud, creating a brilliant jewel box in space.",
+        url: "/images/stars/star-cluster.jpg",
+        thumbnail: "/images/stars/thumbs/star-cluster-thumb.jpg",
         date: "2024-06-08",
-        location: "Taurus constellation",
-        distance: "65 light-years"
+        location: "Dorado Constellation",
+        distance: "170,000 light-years",
+        source: "Hubble Space Telescope",
+        telescope: "Hubble HST"
       },
       {
         id: 'star9',
-        title: "Antares Red Supergiant",
-        description: "A red supergiant star, one of the largest and most luminous observable stars in the Milky Way.",
-        url: "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=800&h=600&fit=crop",
+        title: "Variable Star Pulsation",
+        description: "A star that changes its brightness over time, pulsating like a cosmic heartbeat and helping astronomers measure distances.",
+        url: "/images/stars/variable-star.jpg",
+        thumbnail: "/images/stars/thumbs/variable-star-thumb.jpg",
         date: "2024-06-09",
-        location: "Scorpius constellation",
-        distance: "600 light-years"
+        location: "Cepheus Constellation",
+        distance: "2,500 light-years",
+        source: "Kepler Space Telescope",
+        telescope: "Kepler"
       }
     ],
     blackholes: [
       {
         id: 'bh1',
-        title: "Sagittarius A*",
-        description: "The supermassive black hole at the center of our Milky Way galaxy, with a mass 4 million times our Sun.",
-        url: "https://images.unsplash.com/photo-1543722530-d2c3201371e7?w=800&h=600&fit=crop",
+        title: "Sagittarius A* Black Hole",
+        description: "The supermassive black hole at the center of our galaxy, with a mass 4 million times our Sun, recently imaged for the first time.",
+        url: "/images/blackholes/sagittarius-a.jpg",
+        thumbnail: "/images/blackholes/thumbs/sagittarius-a-thumb.jpg",
         date: "2024-06-01",
         location: "Galactic Center",
-        distance: "26,000 light-years"
+        distance: "26,000 light-years",
+        source: "Event Horizon Telescope",
+        telescope: "EHT"
       },
       {
         id: 'bh2',
         title: "M87* Black Hole",
-        description: "The first black hole ever directly imaged, located in the center of the giant elliptical galaxy M87.",
-        url: "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=800&h=600&fit=crop",
+        description: "The first black hole ever directly imaged, a supermassive giant in the galaxy M87 with jets extending thousands of light-years.",
+        url: "/images/blackholes/m87-black-hole.jpg",
+        thumbnail: "/images/blackholes/thumbs/m87-black-hole-thumb.jpg",
         date: "2024-06-02",
-        location: "Virgo constellation",
-        distance: "53 million light-years"
+        location: "Virgo Constellation",
+        distance: "53 million light-years",
+        source: "Event Horizon Telescope",
+        telescope: "EHT"
       },
       {
         id: 'bh3',
-        title: "Cygnus X-1",
-        description: "One of the first black holes discovered, a stellar-mass black hole in a binary system.",
-        url: "https://images.unsplash.com/photo-1543722530-d2c3201371e7?w=800&h=600&fit=crop",
+        title: "Black Hole Accretion Disk",
+        description: "Matter spiraling into a black hole, heated to millions of degrees and glowing brilliantly before crossing the event horizon.",
+        url: "/images/blackholes/accretion-disk.jpg",
+        thumbnail: "/images/blackholes/thumbs/accretion-disk-thumb.jpg",
         date: "2024-06-03",
-        location: "Cygnus constellation",
-        distance: "6,070 light-years"
+        location: "Various Galaxies",
+        distance: "100 million light-years",
+        source: "Chandra X-ray Observatory",
+        telescope: "Chandra"
       },
       {
         id: 'bh4',
-        title: "TON 618",
-        description: "One of the most massive black holes known, with a mass 66 billion times that of our Sun.",
-        url: "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=800&h=600&fit=crop",
+        title: "Stellar Mass Black Hole",
+        description: "The remnant of a massive star that collapsed under its own gravity, warping spacetime around it in Einstein's predicted way.",
+        url: "/images/blackholes/stellar-black-hole.jpg",
+        thumbnail: "/images/blackholes/thumbs/stellar-black-hole-thumb.jpg",
         date: "2024-06-04",
-        location: "Canes Venatici",
-        distance: "10.4 billion light-years"
+        location: "Cygnus Constellation",
+        distance: "6,000 light-years",
+        source: "Chandra X-ray Observatory",
+        telescope: "Chandra"
       },
       {
         id: 'bh5',
-        title: "GW150914 Merger",
-        description: "The first gravitational wave detection from two merging black holes, opening new astronomy.",
-        url: "https://images.unsplash.com/photo-1543722530-d2c3201371e7?w=800&h=600&fit=crop",
+        title: "Gravitational Lensing",
+        description: "A black hole's immense gravity bending light from background galaxies, creating multiple distorted images like a cosmic magnifying glass.",
+        url: "/images/blackholes/gravitational-lensing.jpg",
+        thumbnail: "/images/blackholes/thumbs/gravitational-lensing-thumb.jpg",
         date: "2024-06-05",
-        location: "Unknown region",
-        distance: "1.3 billion light-years"
+        location: "Deep Space",
+        distance: "5 billion light-years",
+        source: "Hubble Space Telescope",
+        telescope: "Hubble HST"
       },
       {
         id: 'bh6',
-        title: "V404 Cygni",
-        description: "A black hole known for its dramatic outbursts and jets of material extending into space.",
-        url: "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=800&h=600&fit=crop",
+        title: "Quasar Powered by Black Hole",
+        description: "An extremely luminous active galactic nucleus powered by a supermassive black hole consuming matter at prodigious rates.",
+        url: "/images/blackholes/quasar.jpg",
+        thumbnail: "/images/blackholes/thumbs/quasar-thumb.jpg",
         date: "2024-06-06",
-        location: "Cygnus constellation",
-        distance: "7,800 light-years"
+        location: "Distant Universe",
+        distance: "12 billion light-years",
+        source: "ESO Observatory",
+        telescope: "Very Large Telescope"
       },
       {
         id: 'bh7',
-        title: "A0620-00",
-        description: "The closest known black hole to Earth, in a binary system with a K-type main sequence star.",
-        url: "https://images.unsplash.com/photo-1543722530-d2c3201371e7?w=800&h=600&fit=crop",
+        title: "Black Hole Jets",
+        description: "Powerful jets of particles accelerated to near light speed by a supermassive black hole's magnetic field, extending across vast distances.",
+        url: "/images/blackholes/black-hole-jets.jpg",
+        thumbnail: "/images/blackholes/thumbs/black-hole-jets-thumb.jpg",
         date: "2024-06-07",
-        location: "Monoceros constellation",
-        distance: "3,000 light-years"
+        location: "Centaurus A Galaxy",
+        distance: "13 million light-years",
+        source: "Chandra X-ray Observatory",
+        telescope: "Chandra"
       },
       {
         id: 'bh8',
-        title: "J0313-1806",
-        description: "The most distant and ancient black hole detected, formed when the universe was very young.",
-        url: "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=800&h=600&fit=crop",
+        title: "Binary Black Hole System",
+        description: "Two black holes orbiting each other, generating gravitational waves that ripple through spacetime itself.",
+        url: "/images/blackholes/binary-black-holes.jpg",
+        thumbnail: "/images/blackholes/thumbs/binary-black-holes-thumb.jpg",
         date: "2024-06-08",
-        location: "Early Universe",
-        distance: "13.03 billion light-years"
+        location: "Distant Galaxy",
+        distance: "1.3 billion light-years",
+        source: "LIGO Observatory",
+        telescope: "LIGO"
       },
       {
         id: 'bh9',
-        title: "GRS 1915+105",
-        description: "A microquasar with relativistic jets, one of the most luminous objects in our galaxy.",
-        url: "https://images.unsplash.com/photo-1543722530-d2c3201371e7?w=800&h=600&fit=crop",
+        title: "Intermediate Black Hole",
+        description: "A rare intermediate-mass black hole, filling the gap between stellar-mass and supermassive black holes in our understanding.",
+        url: "/images/blackholes/intermediate-bh.jpg",
+        thumbnail: "/images/blackholes/thumbs/intermediate-bh-thumb.jpg",
         date: "2024-06-09",
-        location: "Aquila constellation",
-        distance: "36,000 light-years"
+        location: "Globular Cluster",
+        distance: "25,000 light-years",
+        source: "Hubble Space Telescope",
+        telescope: "Hubble HST"
       }
     ],
     planets: [
       {
         id: 'planet1',
         title: "Mars - The Red Planet",
-        description: "The fourth planet from the Sun, known for its rusty red appearance and potential for past life.",
-        url: "https://images.unsplash.com/photo-1614732414444-096e5f1122d5?w=800&h=600&fit=crop",
+        description: "A world of ancient riverbeds and towering volcanoes, Mars holds secrets of past water flows and potential signs of life.",
+        url: "/images/planets/mars.jpg",
+        thumbnail: "/images/planets/thumbs/mars-thumb.jpg",
         date: "2024-06-01",
-        location: "Solar System",
-        distance: "225 million km"
+        location: "Mars",
+        distance: "225 million km",
+        source: "NASA JPL",
+        telescope: "Mars Reconnaissance Orbiter"
       },
       {
         id: 'planet2',
-        title: "Jupiter - Gas Giant",
-        description: "The largest planet in our solar system, with its iconic Great Red Spot storm.",
-        url: "https://images.unsplash.com/photo-1614732414444-096e5f1122d5?w=800&h=600&fit=crop",
+        title: "Jupiter's Great Red Spot",
+        description: "A storm larger than Earth that has been raging for centuries, showcasing the dynamic atmospheric power of the gas giant.",
+        url: "/images/planets/jupiter-red-spot.jpg",
+        thumbnail: "/images/planets/thumbs/jupiter-red-spot-thumb.jpg",
         date: "2024-06-02",
-        location: "Solar System",
-        distance: "628 million km"
+        location: "Jupiter",
+        distance: "628 million km",
+        source: "NASA JPL",
+        telescope: "Juno Spacecraft"
       },
       {
         id: 'planet3',
-        title: "Saturn's Rings",
-        description: "The magnificent ring system of Saturn, composed of countless ice and rock particles.",
-        url: "https://images.unsplash.com/photo-1614732414444-096e5f1122d5?w=800&h=600&fit=crop",
+        title: "Saturn's Hexagonal Storm",
+        description: "A mysterious six-sided storm at Saturn's north pole, a unique geometric pattern unprecedented in our solar system.",
+        url: "/images/planets/saturn-hexagon.jpg",
+        thumbnail: "/images/planets/thumbs/saturn-hexagon-thumb.jpg",
         date: "2024-06-03",
-        location: "Solar System",
-        distance: "1.35 billion km"
+        location: "Saturn",
+        distance: "1.35 billion km",
+        source: "NASA JPL",
+        telescope: "Cassini Spacecraft"
       },
       {
         id: 'planet4',
-        title: "Venus - Morning Star",
-        description: "The hottest planet in our solar system, shrouded in thick clouds of sulfuric acid.",
-        url: "https://images.unsplash.com/photo-1614732414444-096e5f1122d5?w=800&h=600&fit=crop",
+        title: "Venus Surface Radar",
+        description: "Piercing through Venus's thick atmosphere to reveal a hellish world of volcanoes and impact craters beneath the clouds.",
+        url: "/images/planets/venus-surface.jpg",
+        thumbnail: "/images/planets/thumbs/venus-surface-thumb.jpg",
         date: "2024-06-04",
-        location: "Solar System",
-        distance: "108 million km"
+        location: "Venus",
+        distance: "108 million km",
+        source: "NASA JPL",
+        telescope: "Magellan Spacecraft"
       },
       {
         id: 'planet5',
-        title: "Neptune - Ice Giant",
-        description: "The windiest planet in our solar system, with supersonic winds reaching 2,100 km/h.",
-        url: "https://images.unsplash.com/photo-1614732414444-096e5f1122d5?w=800&h=600&fit=crop",
+        title: "Europa's Icy Surface",
+        description: "Jupiter's moon Europa with its cracked ice shell hiding a subsurface ocean that may harbor life in the darkness below.",
+        url: "/images/planets/europa.jpg",
+        thumbnail: "/images/planets/thumbs/europa-thumb.jpg",
         date: "2024-06-05",
-        location: "Solar System",
-        distance: "4.5 billion km"
+        location: "Europa (Jupiter's Moon)",
+        distance: "628 million km",
+        source: "NASA JPL",
+        telescope: "Galileo Spacecraft"
       },
       {
         id: 'planet6',
-        title: "Kepler-452b",
-        description: "An exoplanet in the habitable zone, often called Earth's cousin for its similar characteristics.",
-        url: "https://images.unsplash.com/photo-1614732414444-096e5f1122d5?w=800&h=600&fit=crop",
+        title: "Titan's Methane Lakes",
+        description: "Saturn's largest moon featuring lakes and rivers of liquid methane, the only other world with stable surface liquids.",
+        url: "/images/planets/titan-lakes.jpg",
+        thumbnail: "/images/planets/thumbs/titan-lakes-thumb.jpg",
         date: "2024-06-06",
-        location: "Cygnus constellation",
-        distance: "1,400 light-years"
+        location: "Titan (Saturn's Moon)",
+        distance: "1.35 billion km",
+        source: "NASA JPL",
+        telescope: "Cassini Spacecraft"
       },
       {
         id: 'planet7',
-        title: "HD 209458 b",
-        description: "The first exoplanet discovered transiting its star, revolutionizing exoplanet detection methods.",
-        url: "https://images.unsplash.com/photo-1614732414444-096e5f1122d5?w=800&h=600&fit=crop",
+        title: "Enceladus Water Geysers",
+        description: "Ice geysers erupting from the south pole of Saturn's moon Enceladus, evidence of a warm subsurface ocean.",
+        url: "/images/planets/enceladus.jpg",
+        thumbnail: "/images/planets/thumbs/enceladus-thumb.jpg",
         date: "2024-06-07",
-        location: "Pegasus constellation",
-        distance: "159 light-years"
+        location: "Enceladus (Saturn's Moon)",
+        distance: "1.35 billion km",
+        source: "NASA JPL",
+        telescope: "Cassini Spacecraft"
       },
       {
         id: 'planet8',
-        title: "TRAPPIST-1 System",
-        description: "A system of seven Earth-sized planets, three of which are in the habitable zone.",
-        url: "https://images.unsplash.com/photo-1614732414444-096e5f1122d5?w=800&h=600&fit=crop",
+        title: "Pluto's Heart",
+        description: "The heart-shaped nitrogen plain on Pluto's surface, revealed in stunning detail by humanity's first close-up visit to the dwarf planet.",
+        url: "/images/planets/pluto.jpg",
+        thumbnail: "/images/planets/thumbs/pluto-thumb.jpg",
         date: "2024-06-08",
-        location: "Aquarius constellation",
-        distance: "40 light-years"
+        location: "Pluto",
+        distance: "5.9 billion km",
+        source: "NASA JPL",
+        telescope: "New Horizons Spacecraft"
       },
       {
         id: 'planet9',
-        title: "Proxima Centauri b",
-        description: "The closest known exoplanet to Earth, located in the habitable zone of its red dwarf star.",
-        url: "https://images.unsplash.com/photo-1614732414444-096e5f1122d5?w=800&h=600&fit=crop",
+        title: "Exoplanet Transit",
+        description: "An artist's concept of an exoplanet passing in front of its star, the method by which we discover new worlds beyond our solar system.",
+        url: "/images/planets/exoplanet.jpg",
+        thumbnail: "/images/planets/thumbs/exoplanet-thumb.jpg",
         date: "2024-06-09",
-        location: "Centaurus constellation",
-        distance: "4.24 light-years"
+        location: "Distant Star System",
+        distance: "100+ light-years",
+        source: "Kepler Space Telescope",
+        telescope: "Kepler"
       }
     ],
     nebulae: [
       {
         id: 'nebula1',
-        title: "Eagle Nebula",
-        description: "Famous for the 'Pillars of Creation', stellar nurseries where new stars are born from cosmic dust.",
-        url: "https://images.unsplash.com/photo-1543722530-d2c3201371e7?w=800&h=600&fit=crop",
+        title: "Eagle Nebula Pillars",
+        description: "The iconic Pillars of Creation, towering columns of gas and dust where new stars are sculpted by stellar winds.",
+        url: "/images/nebulae/eagle-nebula.jpg",
+        thumbnail: "/images/nebulae/thumbs/eagle-nebula-thumb.jpg",
         date: "2024-06-01",
-        location: "Serpens constellation",
-        distance: "7,000 light-years"
+        location: "Serpens Constellation",
+        distance: "7,000 light-years",
+        source: "Hubble Space Telescope",
+        telescope: "Hubble HST"
       },
       {
         id: 'nebula2',
-        title: "Horsehead Nebula",
-        description: "One of the most recognizable dark nebulae, silhouetted against bright background gas.",
-        url: "https://images.unsplash.com/photo-1543722530-d2c3201371e7?w=800&h=600&fit=crop",
+        title: "Rosette Nebula",
+        description: "A stellar nursery resembling a cosmic rose, with hot young stars carving out a cavity in the surrounding gas clouds.",
+        url: "/images/nebulae/rosette-nebula.jpg",
+        thumbnail: "/images/nebulae/thumbs/rosette-nebula-thumb.jpg",
         date: "2024-06-02",
-        location: "Orion constellation",
-        distance: "1,500 light-years"
+        location: "Monoceros Constellation",
+        distance: "5,200 light-years",
+        source: "Spitzer Space Telescope",
+        telescope: "Spitzer"
       },
       {
         id: 'nebula3',
-        title: "Crab Nebula",
-        description: "A supernova remnant containing a pulsar, the remains of a star that exploded in 1054 AD.",
-        url: "https://images.unsplash.com/photo-1543722530-d2c3201371e7?w=800&h=600&fit=crop",
+        title: "Cat's Eye Nebula",
+        description: "A complex planetary nebula with intricate knots and jets created by a dying star's final gasps.",
+        url: "/images/nebulae/cats-eye.jpg",
+        thumbnail: "/images/nebulae/thumbs/cats-eye-thumb.jpg",
         date: "2024-06-03",
-        location: "Taurus constellation",
-        distance: "6,500 light-years"
+        location: "Draco Constellation",
+        distance: "3,300 light-years",
+        source: "Hubble Space Telescope",
+        telescope: "Hubble HST"
       },
       {
         id: 'nebula4',
-        title: "Ring Nebula",
-        description: "A planetary nebula formed by a dying star shedding its outer layers into space.",
-        url: "https://images.unsplash.com/photo-1543722530-d2c3201371e7?w=800&h=600&fit=crop",
+        title: "Helix Nebula",
+        description: "The Eye of God, a planetary nebula created by a dying star expelling its outer layers in brilliant colors.",
+        url: "/images/nebulae/helix-nebula.jpg",
+        thumbnail: "/images/nebulae/thumbs/helix-nebula-thumb.jpg",
         date: "2024-06-04",
-        location: "Lyra constellation",
-        distance: "2,300 light-years"
+        location: "Aquarius Constellation",
+        distance: "650 light-years",
+        source: "ESO Observatory",
+        telescope: "Very Large Telescope"
       },
       {
         id: 'nebula5',
-        title: "Cat's Eye Nebula",
-        description: "A complex planetary nebula with intricate knots, jets, and shock-induced features.",
-        url: "https://images.unsplash.com/photo-1543722530-d2c3201371e7?w=800&h=600&fit=crop",
+        title: "Veil Nebula",
+        description: "The wispy remnants of a massive star that exploded as a supernova 8,000 years ago, creating delicate filamentary structures.",
+        url: "/images/nebulae/veil-nebula.jpg",
+        thumbnail: "/images/nebulae/thumbs/veil-nebula-thumb.jpg",
         date: "2024-06-05",
-        location: "Draco constellation",
-        distance: "3,300 light-years"
+        location: "Cygnus Constellation",
+        distance: "2,100 light-years",
+        source: "Hubble Space Telescope",
+        telescope: "Hubble HST"
       },
       {
         id: 'nebula6',
-        title: "Rosette Nebula",
-        description: "A large circular HII region resembling a rose, with a cavity created by stellar winds.",
-        url: "https://images.unsplash.com/photo-1543722530-d2c3201371e7?w=800&h=600&fit=crop",
+        title: "Ring Nebula",
+        description: "A perfect cosmic ring formed by a dying star shedding its outer atmosphere in symmetrical shells of glowing gas.",
+        url: "/images/nebulae/ring-nebula.jpg",
+        thumbnail: "/images/nebulae/thumbs/ring-nebula-thumb.jpg",
         date: "2024-06-06",
-        location: "Monoceros constellation",
-        distance: "5,200 light-years"
+        location: "Lyra Constellation",
+        distance: "2,300 light-years",
+        source: "Hubble Space Telescope",
+        telescope: "Hubble HST"
       },
       {
         id: 'nebula7',
-        title: "Veil Nebula",
-        description: "A large supernova remnant, the wispy remains of a massive star that exploded 8,000 years ago.",
-        url: "https://images.unsplash.com/photo-1543722530-d2c3201371e7?w=800&h=600&fit=crop",
+        title: "Lagoon Nebula",
+        description: "A bright emission nebula visible to the naked eye, showcasing active star formation in pink and blue hydrogen clouds.",
+        url: "/images/nebulae/lagoon-nebula.jpg",
+        thumbnail: "/images/nebulae/thumbs/lagoon-nebula-thumb.jpg",
         date: "2024-06-07",
-        location: "Cygnus constellation",
-        distance: "2,100 light-years"
+        location: "Sagittarius Constellation",
+        distance: "4,100 light-years",
+        source: "ESO Observatory",
+        telescope: "Very Large Telescope"
       },
       {
         id: 'nebula8',
-        title: "Helix Nebula",
-        description: "Known as the 'Eye of God', the nearest and largest planetary nebula to Earth.",
-        url: "https://images.unsplash.com/photo-1543722530-d2c3201371e7?w=800&h=600&fit=crop",
+        title: "Cone Nebula",
+        description: "A dark cone-shaped pillar of gas and dust silhouetted against bright background emission, sculpted by stellar winds.",
+        url: "/images/nebulae/cone-nebula.jpg",
+        thumbnail: "/images/nebulae/thumbs/cone-nebula-thumb.jpg",
         date: "2024-06-08",
-        location: "Aquarius constellation",
-        distance: "650 light-years"
+        location: "Monoceros Constellation",
+        distance: "2,700 light-years",
+        source: "ESO Observatory",
+        telescope: "Very Large Telescope"
       },
       {
         id: 'nebula9',
-        title: "Orion Nebula",
-        description: "One of the brightest nebulae visible to the naked eye, a stellar nursery in our cosmic neighborhood.",
-        url: "https://images.unsplash.com/photo-1543722530-d2c3201371e7?w=800&h=600&fit=crop",
+        title: "Horsehead Nebula",
+        description: "The most famous dark nebula, a silhouette of cosmic dust against the bright emission nebula behind it.",
+        url: "/images/nebulae/horsehead-nebula.jpg",
+        thumbnail: "/images/nebulae/thumbs/horsehead-nebula-thumb.jpg",
         date: "2024-06-09",
-        location: "Orion constellation",
-        distance: "1,344 light-years"
+        location: "Orion Constellation",
+        distance: "1,500 light-years",
+        source: "Hubble Space Telescope",
+        telescope: "Hubble HST"
       }
     ],
     galaxies: [
       {
         id: 'galaxy1',
-        title: "Andromeda Galaxy",
-        description: "The nearest major galaxy to the Milky Way, containing approximately one trillion stars.",
-        url: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=800&h=600&fit=crop",
+        title: "Whirlpool Galaxy",
+        description: "A grand design spiral galaxy with perfect spiral arms, interacting with a smaller companion galaxy in a cosmic dance.",
+        url: "/images/galaxies/whirlpool.jpg",
+        thumbnail: "/images/galaxies/thumbs/whirlpool-thumb.jpg",
         date: "2024-06-01",
-        location: "Andromeda constellation",
-        distance: "2.537 million light-years"
+        location: "Canes Venatici",
+        distance: "23 million light-years",
+        source: "Hubble Space Telescope",
+        telescope: "Hubble HST"
       },
       {
         id: 'galaxy2',
-        title: "Whirlpool Galaxy",
-        description: "A grand design spiral galaxy famous for its prominent spiral structure and companion galaxy.",
-        url: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=800&h=600&fit=crop",
+        title: "Sombrero Galaxy",
+        description: "A lenticular galaxy with a prominent dust lane resembling a Mexican hat, showcasing billions of ancient stars.",
+        url: "/images/galaxies/sombrero.jpg",
+        thumbnail: "/images/galaxies/thumbs/sombrero-thumb.jpg",
         date: "2024-06-02",
-        location: "Canes Venatici",
-        distance: "23 million light-years"
+        location: "Virgo Constellation",
+        distance: "28 million light-years",
+        source: "Hubble Space Telescope",
+        telescope: "Hubble HST"
       },
       {
         id: 'galaxy3',
-        title: "Sombrero Galaxy",
-        description: "A spiral galaxy with a prominent dust lane and bright central bulge resembling a sombrero hat.",
-        url: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=800&h=600&fit=crop",
+        title: "Centaurus A",
+        description: "A peculiar galaxy with a dramatic dust lane, the result of a cosmic collision between two galaxies millions of years ago.",
+        url: "/images/galaxies/centaurus-a.jpg",
+        thumbnail: "/images/galaxies/thumbs/centaurus-a-thumb.jpg",
         date: "2024-06-03",
-        location: "Virgo constellation",
-        distance: "29 million light-years"
+        location: "Centaurus Constellation",
+        distance: "13 million light-years",
+        source: "ESO Observatory",
+        telescope: "Very Large Telescope"
       },
       {
         id: 'galaxy4',
         title: "Pinwheel Galaxy",
-        description: "A face-on spiral galaxy with well-defined spiral arms and active star formation regions.",
-        url: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=800&h=600&fit=crop",
+        description: "A face-on spiral galaxy with well-defined spiral arms, one of the largest and brightest galaxies in our cosmic neighborhood.",
+        url: "/images/galaxies/pinwheel.jpg",
+        thumbnail: "/images/galaxies/thumbs/pinwheel-thumb.jpg",
         date: "2024-06-04",
         location: "Ursa Major",
-        distance: "21 million light-years"
+        distance: "21 million light-years",
+        source: "ESO Observatory",
+        telescope: "Very Large Telescope"
       },
       {
         id: 'galaxy5',
-        title: "Centaurus A",
-        description: "A peculiar galaxy with a prominent dust lane, likely the result of a galactic collision.",
-        url: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=800&h=600&fit=crop",
+        title: "Tadpole Galaxy",
+        description: "A disrupted barred spiral galaxy with a long tail of stars, stretched by gravitational interaction with a smaller galaxy.",
+        url: "/images/galaxies/tadpole.jpg",
+        thumbnail: "/images/galaxies/thumbs/tadpole-thumb.jpg",
         date: "2024-06-05",
-        location: "Centaurus constellation",
-        distance: "13.7 million light-years"
+        location: "Draco Constellation",
+        distance: "420 million light-years",
+        source: "Hubble Space Telescope",
+        telescope: "Hubble HST"
       },
       {
         id: 'galaxy6',
-        title: "Large Magellanic Cloud",
-        description: "A satellite galaxy of the Milky Way, containing the Tarantula Nebula star-forming region.",
-        url: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=800&h=600&fit=crop",
+        title: "Antennae Galaxies",
+        description: "Two colliding galaxies creating a spectacular cosmic crash that triggers intense star formation in their tidal tails.",
+        url: "/images/galaxies/antennae.jpg",
+        thumbnail: "/images/galaxies/thumbs/antennae-thumb.jpg",
         date: "2024-06-06",
-        location: "Southern Sky",
-        distance: "160,000 light-years"
+        location: "Corvus Constellation",
+        distance: "45 million light-years",
+        source: "Hubble Space Telescope",
+        telescope: "Hubble HST"
       },
       {
         id: 'galaxy7',
-        title: "Triangulum Galaxy",
-        description: "The third-largest galaxy in our Local Group, with prominent H II star-forming regions.",
-        url: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=800&h=600&fit=crop",
+        title: "Large Magellanic Cloud",
+        description: "A satellite galaxy of the Milky Way, containing the brightest star-forming region known - the Tarantula Nebula.",
+        url: "/images/galaxies/lmc.jpg",
+        thumbnail: "/images/galaxies/thumbs/lmc-thumb.jpg",
         date: "2024-06-07",
-        location: "Triangulum constellation",
-        distance: "3 million light-years"
+        location: "Southern Sky",
+        distance: "160,000 light-years",
+        source: "ESO Observatory",
+        telescope: "Very Large Telescope"
       },
       {
         id: 'galaxy8',
         title: "Sculptor Galaxy",
-        description: "A bright spiral galaxy and the brightest member of the Sculptor Group of galaxies.",
-        url: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=800&h=600&fit=crop",
+        description: "A bright spiral galaxy, the brightest member of the Sculptor Group, showcasing beautiful spiral arm structure.",
+        url: "/images/galaxies/sculptor.jpg",
+        thumbnail: "/images/galaxies/thumbs/sculptor-thumb.jpg",
         date: "2024-06-08",
-        location: "Sculptor constellation",
-        distance: "11.4 million light-years"
+        location: "Sculptor Constellation",
+        distance: "11.4 million light-years",
+        source: "ESO Observatory",
+        telescope: "Very Large Telescope"
       },
       {
         id: 'galaxy9',
-        title: "Messier 104",
-        description: "A lenticular galaxy in Virgo, known for its bright nucleus and prominent dust lane.",
-        url: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=800&h=600&fit=crop",
+        title: "Andromeda Galaxy",
+        description: "Our nearest galactic neighbor, approaching the Milky Way for a cosmic collision in 4.5 billion years.",
+        url: "/images/galaxies/andromeda.jpg",
+        thumbnail: "/images/galaxies/thumbs/andromeda-thumb.jpg",
         date: "2024-06-09",
-        location: "Virgo constellation",
-        distance: "28 million light-years"
+        location: "Andromeda Constellation",
+        distance: "2.5 million light-years",
+        source: "Hubble Space Telescope",
+        telescope: "Hubble HST"
       }
     ],
     supernovas: [
       {
         id: 'sn1',
-        title: "Supernova 1987A",
-        description: "The closest supernova observed in modern times, providing unprecedented insight into stellar death.",
-        url: "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=800&h=600&fit=crop",
+        title: "Supernova Remnant Cassiopeia A",
+        description: "The expanding shockwave from a star that exploded 350 years ago, now creating a beautiful bubble of hot gas and heavy elements.",
+        url: "/images/supernovas/cassiopeia-a.jpg",
+        thumbnail: "/images/supernovas/thumbs/cassiopeia-a-thumb.jpg",
         date: "2024-06-01",
-        location: "Large Magellanic Cloud",
-        distance: "160,000 light-years"
+        location: "Cassiopeia Constellation",
+        distance: "11,000 light-years",
+        source: "Chandra X-ray Observatory",
+        telescope: "Chandra"
       },
       {
         id: 'sn2',
-        title: "Kepler's Supernova",
-        description: "A Type Ia supernova observed in 1604, the most recent supernova seen in the Milky Way.",
-        url: "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=800&h=600&fit=crop",
+        title: "Vela Supernova Remnant",
+        description: "An ancient supernova remnant that occurred about 11,000 years ago, leaving behind intricate filamentary structures.",
+        url: "/images/supernovas/vela-remnant.jpg",
+        thumbnail: "/images/supernovas/thumbs/vela-remnant-thumb.jpg",
         date: "2024-06-02",
-        location: "Ophiuchus constellation",
-        distance: "20,000 light-years"
+        location: "Vela Constellation",
+        distance: "800 light-years",
+        source: "ESO Observatory",
+        telescope: "Very Large Telescope"
       },
       {
         id: 'sn3',
-        title: "Tycho's Supernova",
-        description: "A supernova observed in 1572 that helped change our understanding of the heavens.",
-        url: "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=800&h=600&fit=crop",
+        title: "Kepler's Supernova",
+        description: "The remnant of the last supernova seen in our galaxy, observed by Johannes Kepler in 1604 and still expanding today.",
+        url: "/images/supernovas/kepler-supernova.jpg",
+        thumbnail: "/images/supernovas/thumbs/kepler-supernova-thumb.jpg",
         date: "2024-06-03",
-        location: "Cassiopeia constellation",
-        distance: "8,000-9,800 light-years"
+        location: "Ophiuchus Constellation",
+        distance: "20,000 light-years",
+        source: "Spitzer Space Telescope",
+        telescope: "Spitzer"
       },
       {
         id: 'sn4',
-        title: "Cassiopeia A",
-        description: "The remnant of a massive star that exploded about 300 years ago, now a strong radio source.",
-        url: "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=800&h=600&fit=crop",
+        title: "Tycho's Supernova",
+        description: "A Type Ia supernova remnant from 1572, helping astronomers understand how white dwarf stars can explode.",
+        url: "/images/supernovas/tycho-supernova.jpg",
+        thumbnail: "/images/supernovas/thumbs/tycho-supernova-thumb.jpg",
         date: "2024-06-04",
-        location: "Cassiopeia constellation",
-        distance: "11,000 light-years"
+        location: "Cassiopeia Constellation",
+        distance: "8,000 light-years",
+        source: "Chandra X-ray Observatory",
+        telescope: "Chandra"
       },
       {
         id: 'sn5',
-        title: "SN 2014J",
-        description: "A Type Ia supernova in the nearby Cigar Galaxy, one of the closest supernovae in recent decades.",
-        url: "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=800&h=600&fit=crop",
+        title: "Supernova 1987A",
+        description: "The closest supernova in modern times, providing unprecedented detail about how massive stars die and create heavy elements.",
+        url: "/images/supernovas/sn1987a.jpg",
+        thumbnail: "/images/supernovas/thumbs/sn1987a-thumb.jpg",
         date: "2024-06-05",
-        location: "Ursa Major",
-        distance: "11.5 million light-years"
+        location: "Large Magellanic Cloud",
+        distance: "160,000 light-years",
+        source: "Hubble Space Telescope",
+        telescope: "Hubble HST"
       },
       {
         id: 'sn6',
-        title: "Vela Supernova",
-        description: "An ancient supernova remnant that occurred about 11,000-12,300 years ago.",
-        url: "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=800&h=600&fit=crop",
+        title: "Puppis A Supernova",
+        description: "A supernova remnant approximately 3,700 years old, showing the complex interaction between the explosion and surrounding gas.",
+        url: "/images/supernovas/puppis-a.jpg",
+        thumbnail: "/images/supernovas/thumbs/puppis-a-thumb.jpg",
         date: "2024-06-06",
-        location: "Vela constellation",
-        distance: "800 light-years"
+        location: "Puppis Constellation",
+        distance: "7,000 light-years",
+        source: "ESO Observatory",
+        telescope: "Very Large Telescope"
       },
       {
         id: 'sn7',
-        title: "Puppis A",
-        description: "A supernova remnant approximately 3,700 years old, showing complex shock wave structures.",
-        url: "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=800&h=600&fit=crop",
+        title: "G292.0+1.8 Remnant",
+        description: "A young supernova remnant containing a pulsar, showing how neutron stars are born from stellar explosions.",
+        url: "/images/supernovas/g292-remnant.jpg",
+        thumbnail: "/images/supernovas/thumbs/g292-remnant-thumb.jpg",
         date: "2024-06-07",
-        location: "Puppis constellation",
-        distance: "7,000 light-years"
+        location: "Centaurus Constellation",
+        distance: "20,000 light-years",
+        source: "Chandra X-ray Observatory",
+        telescope: "Chandra"
       },
       {
         id: 'sn8',
-        title: "G1.9+0.3",
-        description: "The youngest known supernova remnant in our galaxy, only about 100 years old.",
-        url: "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=800&h=600&fit=crop",
+        title: "RCW 86 Supernova",
+        description: "Possibly the remnant of a supernova recorded by Chinese astronomers in 185 AD, one of the oldest recorded stellar explosions.",
+        url: "/images/supernovas/rcw86.jpg",
+        thumbnail: "/images/supernovas/thumbs/rcw86-thumb.jpg",
         date: "2024-06-08",
-        location: "Sagittarius constellation",
-        distance: "25,000 light-years"
+        location: "Circinus Constellation",
+        distance: "8,200 light-years",
+        source: "ESO Observatory",
+        telescope: "Very Large Telescope"
       },
       {
         id: 'sn9',
-        title: "SN 2011fe",
-        description: "A nearby Type Ia supernova that was well-studied and helped refine our understanding of these cosmic explosions.",
-        url: "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=800&h=600&fit=crop",
+        title: "IC 443 Jellyfish Nebula",
+        description: "A supernova remnant that resembles a jellyfish, showing how stellar explosions enrich space with heavy elements.",
+        url: "/images/supernovas/ic443.jpg",
+        thumbnail: "/images/supernovas/thumbs/ic443-thumb.jpg",
         date: "2024-06-09",
-        location: "Ursa Major",
-        distance: "21 million light-years"
+        location: "Gemini Constellation",
+        distance: "5,000 light-years",
+        source: "ESO Observatory",
+        telescope: "Very Large Telescope"
       }
     ]
   };
+
+  // Daily rotation logic
+  const getDailyFeatured = () => {
+    const today = new Date();
+    const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
+    
+    // Rotate through all category images and select 9
+    const allCategoryImages = Object.values(allImages).flat();
+    const startIndex = (dayOfYear * 9) % allCategoryImages.length;
+    
+    const selectedImages = [];
+    for (let i = 0; i < 9; i++) {
+      const index = (startIndex + i) % allCategoryImages.length;
+      const image = { ...allCategoryImages[index] };
+      image.id = `daily-${i + 1}`;
+      image.date = today.toISOString().split('T')[0];
+      image.type = 'featured';
+      selectedImages.push(image);
+    }
+    
+    return selectedImages;
+  };
+
+  // Update daily images every 24 hours
+  useEffect(() => {
+    const updateDailyImages = () => {
+      const cachedDate = localStorage.getItem('dailyImagesDate');
+      const today = new Date().toDateString();
+      
+      if (cachedDate !== today) {
+        const newDailyImages = getDailyFeatured();
+        setDailyImages(newDailyImages);
+        setLastFetch(new Date().toISOString());
+        
+        localStorage.setItem('dailyImages', JSON.stringify(newDailyImages));
+        localStorage.setItem('dailyImagesDate', today);
+        localStorage.setItem('lastFetch', new Date().toISOString());
+      } else {
+        // Load from cache
+        const cached = localStorage.getItem('dailyImages');
+        if (cached) {
+          setDailyImages(JSON.parse(cached));
+          setLastFetch(localStorage.getItem('lastFetch'));
+        }
+      }
+    };
+
+    updateDailyImages();
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -528,16 +745,62 @@ const Gallery = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  // Fixed currentImages calculation with better debugging
   const currentImages = useMemo(() => {
-    return allImages[activeCategory] || [];
-  }, [activeCategory]);
+    console.log('=== CURRENT IMAGES CALCULATION ===');
+    console.log('Active Category:', activeCategory);
+    console.log('All Images Keys:', Object.keys(allImages));
+    console.log('Daily Images Length:', dailyImages.length);
+    
+    if (activeCategory === 'daily') {
+      const result = dailyImages.length > 0 ? dailyImages : getDailyFeatured();
+      console.log('Returning Daily Images:', result.length);
+      return result;
+    }
+    
+    const result = allImages[activeCategory] || [];
+    console.log(`Images for ${activeCategory}:`, result.length);
+    console.log('First image:', result[0]);
+    return result;
+  }, [activeCategory, dailyImages]);
 
+  // Enhanced handleCategoryChange function with scrolling
   const handleCategoryChange = (categoryId) => {
+    console.log('=== CATEGORY CHANGE ===');
+    console.log('Requested Category:', categoryId);
+    console.log('Current Category:', activeCategory);
+    
+    // Don't do anything if same category
+    if (categoryId === activeCategory) {
+      console.log('Same category, scrolling to gallery');
+      // Just scroll to gallery if same category
+      if (galleryRef.current) {
+        galleryRef.current.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
+      return;
+    }
+    
     setLoading(true);
+    
+    // Immediately update the active category
+    setActiveCategory(categoryId);
+    console.log('Category updated to:', categoryId);
+    
+    // Short delay for loading effect, then scroll
     setTimeout(() => {
-      setActiveCategory(categoryId);
       setLoading(false);
-    }, 300);
+      
+      // Scroll to gallery section
+      if (galleryRef.current) {
+        galleryRef.current.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
+    }, 500);
   };
 
   const handleImageClick = (image) => {
@@ -548,6 +811,16 @@ const Gallery = () => {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setTimeout(() => setSelectedImage(null), 300);
+  };
+
+  const handleRefreshDaily = () => {
+    const newDailyImages = getDailyFeatured();
+    setDailyImages(newDailyImages);
+    setLastFetch(new Date().toISOString());
+    
+    localStorage.setItem('dailyImages', JSON.stringify(newDailyImages));
+    localStorage.setItem('dailyImagesDate', new Date().toDateString());
+    localStorage.setItem('lastFetch', new Date().toISOString());
   };
 
   const ImageCard = ({ image, index }) => {
@@ -565,7 +838,7 @@ const Gallery = () => {
 
     return (
       <div 
-        className={`image-card ${isLoaded ? 'loaded' : ''}`}
+        className={`image-card ${isLoaded ? 'loaded' : ''} ${image.type === 'featured' ? 'featured-card' : ''}`}
         onClick={() => handleImageClick(image)}
         style={{ animationDelay: `${index * 0.1}s` }}
       >
@@ -587,7 +860,7 @@ const Gallery = () => {
             )}
             
             <img 
-              src={image.url} 
+              src={image.thumbnail || image.url} 
               alt={image.title}
               className="card-image"
               onLoad={handleImageLoad}
@@ -599,6 +872,16 @@ const Gallery = () => {
               <div className="overlay-content">
                 <h3 className="image-title">{image.title}</h3>
                 <p className="image-location">{image.location}</p>
+                {image.type === 'featured' && (
+                  <div className="featured-badge">
+                    <span className="badge-icon">⭐</span>
+                    <span className="badge-text">Featured</span>
+                  </div>
+                )}
+                <div className="telescope-badge">
+                  <span className="telescope-icon">📡</span>
+                  <span className="telescope-text">{image.telescope}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -609,7 +892,12 @@ const Gallery = () => {
               <span className="card-date">{image.date}</span>
             </div>
             
-            <p className="card-description">{image.description}</p>
+            <p className="card-description">
+              {image.description.length > 150 
+                ? `${image.description.substring(0, 150)}...` 
+                : image.description
+              }
+            </p>
             
             <div className="card-meta">
               <div className="meta-item">
@@ -619,6 +907,14 @@ const Gallery = () => {
               <div className="meta-item">
                 <span className="meta-icon">📏</span>
                 <span className="meta-text">{image.distance}</span>
+              </div>
+              <div className="meta-item">
+                <span className="meta-icon">🔭</span>
+                <span className="meta-text">{image.telescope}</span>
+              </div>
+              <div className="meta-item">
+                <span className="meta-icon">📸</span>
+                <span className="meta-text">{image.source}</span>
               </div>
             </div>
           </div>
@@ -670,6 +966,12 @@ const Gallery = () => {
             <div className="modal-header">
               <h2 className="modal-title">{selectedImage.title}</h2>
               <span className="modal-date">{selectedImage.date}</span>
+              {selectedImage.type === 'featured' && (
+                <div className="modal-featured-badge">
+                  <span className="badge-icon">⭐</span>
+                  <span className="badge-text">Featured Today</span>
+                </div>
+              )}
             </div>
             
             <p className="modal-description">{selectedImage.description}</p>
@@ -687,6 +989,26 @@ const Gallery = () => {
                 <span className="detail-label">Category:</span>
                 <span className="detail-value">{activeCategory}</span>
               </div>
+              <div className="detail-item">
+                <span className="detail-label">Telescope:</span>
+                <span className="detail-value">{selectedImage.telescope}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Source:</span>
+                <span className="detail-value">{selectedImage.source}</span>
+              </div>
+            </div>
+            
+            <div className="modal-actions">
+              <a 
+                href={selectedImage.url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="hd-link"
+              >
+                <span className="hd-icon">🔍</span>
+                View Full Resolution
+              </a>
             </div>
           </div>
         </div>
@@ -707,6 +1029,19 @@ const Gallery = () => {
               Explore the breathtaking wonders of our universe through stunning imagery
             </p>
             <div className="hero-decorative-line"></div>
+            
+            {activeCategory === 'daily' && lastFetch && (
+              <div className="last-update">
+                <span className="update-icon">🔄</span>
+                <span className="update-text">
+                  Daily featured updated: {new Date(lastFetch).toLocaleDateString()}
+                </span>
+                <button className="refresh-btn" onClick={handleRefreshDaily}>
+                  <span className="refresh-icon">🔄</span>
+                  Refresh
+                </button>
+              </div>
+            )}
           </div>
           
           {/* Enhanced 3D Floating Elements */}
@@ -741,7 +1076,7 @@ const Gallery = () => {
         <div className="container">
           <h2 className="section-title">Choose Your Cosmic Journey</h2>
           <p className="section-subtitle">
-            Select a category to explore 9 stunning images of cosmic phenomena
+            Discover the universe through different astronomical phenomena and celestial objects
           </p>
           
           <div className="category-grid">
@@ -772,16 +1107,16 @@ const Gallery = () => {
               <span className="stat-label">Images per Category</span>
             </div>
             <div className="stat-item">
-              <span className="stat-number">{categories.length}</span>
+              <span className="stat-number">{categories.length - 1}</span>
               <span className="stat-label">Categories</span>
             </div>
             <div className="stat-item">
-              <span className="stat-number">{Object.keys(allImages).length * 9}</span>
+              <span className="stat-number">{(categories.length - 1) * 9}</span>
               <span className="stat-label">Total Images</span>
             </div>
             <div className="stat-item">
-              <span className="stat-number">∞</span>
-              <span className="stat-label">Wonder</span>
+              <span className="stat-number">HD</span>
+              <span className="stat-label">Quality</span>
             </div>
           </div>
         </div>
@@ -802,9 +1137,40 @@ const Gallery = () => {
         </div>
       </section>
 
-      {/* Main Gallery Section */}
-      <section className="main-gallery">
+      {/* Main Gallery Section with Ref for Scrolling */}
+      <section className="main-gallery" ref={galleryRef}>
         <div className="container">
+          {/* Enhanced Debug info */}
+          <div style={{ 
+            marginBottom: '20px', 
+            padding: '15px', 
+            background: 'rgba(255,255,255,0.1)', 
+            borderRadius: '10px',
+            backdropFilter: 'blur(10px)',
+            color: 'white'
+          }}>
+            <h4>🔍 Debug Information:</h4>
+            <p><strong>Active Category:</strong> {activeCategory}</p>
+            <p><strong>Available Categories:</strong> {Object.keys(allImages).join(', ')}</p>
+            <p><strong>Current Images Count:</strong> {currentImages.length}</p>
+            <p><strong>Loading State:</strong> {loading ? 'Yes' : 'No'}</p>
+            <p><strong>First Image Title:</strong> {currentImages[0]?.title || 'None'}</p>
+            <button 
+              onClick={() => console.log('Current Images:', currentImages)}
+              style={{
+                padding: '5px 10px',
+                marginTop: '10px',
+                background: '#4A90E2',
+                color: 'white',
+                border: 'none',
+                borderRadius: '5px',
+                cursor: 'pointer'
+              }}
+            >
+              Log Images to Console
+            </button>
+          </div>
+          
           <div className="gallery-grid">
             {loading ? (
               <div className="gallery-loading">
@@ -813,14 +1179,26 @@ const Gallery = () => {
                   <p>Loading cosmic wonders...</p>
                 </div>
               </div>
-            ) : (
+            ) : currentImages.length > 0 ? (
               currentImages.map((image, index) => (
                 <ImageCard
-                  key={image.id}
+                  key={`${activeCategory}-${image.id}`}
                   image={image}
                   index={index}
                 />
               ))
+            ) : (
+              <div className="no-images" style={{
+                textAlign: 'center',
+                padding: '50px',
+                color: 'white',
+                background: 'rgba(255,255,255,0.1)',
+                borderRadius: '10px'
+              }}>
+                <h3>🌌 No images available</h3>
+                <p>Category: {activeCategory}</p>
+                <p>Available categories: {Object.keys(allImages).join(', ')}</p>
+              </div>
             )}
           </div>
         </div>
