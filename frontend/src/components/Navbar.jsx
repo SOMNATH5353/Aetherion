@@ -1,85 +1,80 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import './Navbar.css';
 
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      const isScrolled = window.scrollY > 10;
-      setScrolled(isScrolled);
+      const scrollPosition = window.scrollY;
+      setIsScrolled(scrollPosition > 50);
     };
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  const scrollToSection = (sectionId) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-      setIsOpen(false);
-    }
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
   };
 
   return (
-    <nav className={`navbar ${scrolled ? 'scrolled' : ''}`}>
+    <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
       <div className="nav-container">
-        <div className="nav-logo" onClick={() => scrollToSection('home')}>
+        {/* Enhanced AETHERION Logo */}
+        <Link to="/" className="nav-logo" onClick={closeMobileMenu}>
           <div className="logo-effects">
             <div className="logo-energy-field"></div>
             <div className="logo-particles">
               <span className="particle p1">✦</span>
-              <span className="particle p2">★</span>
-              <span className="particle p3">✧</span>
-              <span className="particle p4">✨</span>
+              <span className="particle p2">✧</span>
+              <span className="particle p3">✦</span>
+              <span className="particle p4">✧</span>
             </div>
           </div>
           <span className="logo-icon">🚀</span>
           <span className="logo-text">AETHERION</span>
-        </div>
+        </Link>
 
-        <ul className={`nav-menu ${isOpen ? 'active' : ''}`}>
+        {/* Navigation Menu */}
+        <ul className={`nav-menu ${isMobileMenuOpen ? 'active' : ''}`}>
           <li>
-            <a href="#home" className="nav-link" onClick={() => scrollToSection('home')}>
+            <Link to="/" className="nav-link" onClick={closeMobileMenu}>
               <span className="link-text">Home</span>
               <div className="spacecraft-trail">
                 <span className="spacecraft">🛸</span>
               </div>
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="#gallery" className="nav-link" onClick={() => scrollToSection('gallery')}>
-              <span className="link-text">Gallery</span>
-              <div className="spacecraft-trail">
-                <span className="spacecraft">🛸</span>
-              </div>
-            </a>
-          </li>
-          <li>
-            <a href="#about" className="nav-link" onClick={() => scrollToSection('about')}>
+            <Link to="/about" className="nav-link" onClick={closeMobileMenu}>
               <span className="link-text">About</span>
               <div className="spacecraft-trail">
                 <span className="spacecraft">🛸</span>
               </div>
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="#contact" className="nav-link" onClick={() => scrollToSection('contact')}>
-              <span className="link-text">Contact</span>
+            <Link to="/gallery" className="nav-link" onClick={closeMobileMenu}>
+              <span className="link-text">Gallery</span>
               <div className="spacecraft-trail">
                 <span className="spacecraft">🛸</span>
               </div>
-            </a>
+            </Link>
           </li>
         </ul>
 
-        <div className={`nav-toggle ${isOpen ? 'active' : ''}`} onClick={toggleMenu}>
+        {/* Mobile Menu Toggle */}
+        <div 
+          className={`nav-toggle ${isMobileMenuOpen ? 'active' : ''}`} 
+          onClick={toggleMobileMenu}
+        >
           <span className="bar"></span>
           <span className="bar"></span>
           <span className="bar"></span>

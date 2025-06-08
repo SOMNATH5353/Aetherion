@@ -40,7 +40,7 @@
   gap: 2rem;
 }
 
-/* Enhanced AETHERION Logo with New Futuristic Font */
+/* Enhanced AETHERION Logo with New Futuristic Font - FIXED UNDERLINE */
 .nav-logo {
   display: flex;
   align-items: center;
@@ -48,23 +48,50 @@
   cursor: pointer;
   position: relative;
   flex-shrink: 0;
+  text-decoration: none !important; /* Force remove text decoration */
+  border: none !important; /* Remove any border */
+  outline: none !important; /* Remove outline */
+}
+
+/* Remove underline and any text decoration from Link */
+.nav-logo,
+.nav-logo:hover,
+.nav-logo:visited,
+.nav-logo:focus,
+.nav-logo:active {
+  text-decoration: none !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+  outline: none !important;
 }
 
 .logo-text {
   position: relative;
-  font-family: 'Orbitron', 'Exo 2', 'Rajdhani', sans-serif; /* New futuristic fonts */
-  font-size: 2.2rem; /* Slightly larger */
+  font-family: 'Orbitron', 'Exo 2', 'Rajdhani', sans-serif;
+  font-size: 2.2rem;
   font-weight: 900;
   background: linear-gradient(135deg, #00D4FF, #0099CC, #6633FF, #9966FF, #FF6B6B);
   background-size: 400% 400%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  letter-spacing: 4px; /* Increased letter spacing for futuristic look */
+  letter-spacing: 4px;
   transition: all 0.4s ease;
   animation: logoGradientFlow 5s ease-in-out infinite;
   filter: drop-shadow(0 0 25px rgba(64, 224, 208, 0.5));
-  text-transform: uppercase; /* All caps for tech feel */
+  text-transform: uppercase;
+  text-decoration: none !important; /* Ensure no text decoration */
+  border-bottom: none !important; /* Ensure no border */
+}
+
+/* Ensure no underline on any state */
+.logo-text:hover,
+.logo-text:visited,
+.logo-text:focus,
+.logo-text:active {
+  text-decoration: none !important;
+  border-bottom: none !important;
+  outline: none !important;
 }
 
 @keyframes logoGradientFlow {
@@ -170,6 +197,7 @@
   font-size: 2.2rem;
   filter: drop-shadow(0 0 20px rgba(64, 224, 208, 0.8));
   animation: rocketFloat 4s ease-in-out infinite;
+  text-decoration: none !important; /* Remove any text decoration */
 }
 
 @keyframes rocketFloat {
@@ -195,7 +223,7 @@
 .nav-link {
   position: relative;
   color: #FFFFFF;
-  text-decoration: none;
+  text-decoration: none !important; /* Force remove text decoration */
   font-weight: 600;
   font-size: 1.1rem;
   padding: 0.8rem 1.5rem;
@@ -206,7 +234,19 @@
   backdrop-filter: blur(10px);
   overflow: visible;
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-  font-family: 'Rajdhani', sans-serif; /* Consistent futuristic font */
+  font-family: 'Rajdhani', sans-serif;
+  display: block; /* Ensure proper display */
+}
+
+/* Remove underline from all nav links */
+.nav-link,
+.nav-link:hover,
+.nav-link:visited,
+.nav-link:focus,
+.nav-link:active {
+  text-decoration: none !important;
+  border-bottom: none !important;
+  outline: none !important;
 }
 
 .link-text {
@@ -215,6 +255,7 @@
   transition: all 0.3s ease;
   color: #FFFFFF;
   font-weight: 700;
+  text-decoration: none !important; /* Ensure no text decoration */
 }
 
 /* Updated Spacecraft Trail for External Orbit */
@@ -245,11 +286,13 @@
     0 15px 35px rgba(64, 224, 208, 0.3),
     0 0 50px rgba(64, 224, 208, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  text-decoration: none !important; /* Ensure no underline on hover */
 }
 
 .nav-link:hover .link-text {
   color: #40E0D0;
   text-shadow: 0 0 20px rgba(64, 224, 208, 0.8);
+  text-decoration: none !important; /* Ensure no underline on hover */
 }
 
 .nav-link:hover .spacecraft-trail {
@@ -345,6 +388,7 @@
 
 .nav-link:active {
   transform: translateY(-1px) scale(1.02);
+  text-decoration: none !important; /* Ensure no underline on active */
 }
 
 /* Mobile Menu Toggle */
@@ -406,6 +450,7 @@
     background: rgba(255, 255, 255, 0.12);
     border: 2px solid rgba(255, 255, 255, 0.3);
     overflow: hidden;
+    text-decoration: none !important; /* Mobile fix */
   }
 
   .nav-link:hover .spacecraft-trail {
@@ -461,6 +506,7 @@
   .nav-link {
     font-size: 1rem;
     padding: 1rem 1.5rem;
+    text-decoration: none !important; /* Small screen fix */
   }
 
   .nav-menu {
@@ -513,16 +559,23 @@
   50% { opacity: 1; }
 }
 
+/* Global fix for all Link components */
+a, a:hover, a:visited, a:focus, a:active {
+  text-decoration: none !important;
+  border-bottom: none !important;
+  outline: none !important;
+}
+
 /* Smooth animations */
 * {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Remove any unwanted effects */
-.nav-link,
-.nav-link:visited,
-.nav-link:focus {
-  outline: none;
-  text-decoration: none;
+/* Force remove any browser default styles for links */
+.nav-logo *,
+.nav-link * {
+  text-decoration: none !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
 }
