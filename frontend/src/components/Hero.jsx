@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import './Hero.css';
 
 const Hero = () => {
@@ -7,6 +7,13 @@ const Hero = () => {
   const [error, setError] = useState(null);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  
+  // Audio narration states
+  const [isNarrating, setIsNarrating] = useState(false);
+  const [audioLoading, setAudioLoading] = useState(false);
+  const [audioError, setAudioError] = useState(null);
+  const [narrationProgress, setNarrationProgress] = useState(0);
+  const audioRef = useRef(null);
 
   // Function to clean APOD description text
   const cleanDescription = useCallback((text) => {
@@ -142,6 +149,163 @@ const Hero = () => {
     }
   }, [fallbackData, cleanDescription]);
 
+  // Enhanced voice narration functionality with proper stop control
+  const handleNarration = useCallback(async (speed = 'normal', lang = 'en') => {
+    if (!apod || !apod.explanation) {
+      setAudioError('No content available for narration');
+      return;
+    }
+
+    // Stop current narration if playing
+    if (isNarrating && audioRef.current) {
+      console.log('🛑 Stopping current narration...');
+      
+      // Properly stop and cleanup audio
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      
+      // Revoke the blob URL to free memory
+      if (audioRef.current.src && audioRef.current.src.startsWith('blob:')) {
+        URL.revokeObjectURL(audioRef.current.src);
+      }
+      
+      // Reset states
+      setIsNarrating(false);
+      setNarrationProgress(0);
+      setAudioError(null);
+      
+      // Clear the audio reference
+      audioRef.current = null;
+      
+      console.log('✅ Narration stopped successfully');
+      return;
+    }
+
+    try {
+      setAudioLoading(true);
+      setAudioError(null);
+      setNarrationProgress(0);
+      
+      console.log('🎙️ Generating enhanced voice narration...');
+      
+      // Create narration URL with parameters
+      const narrationUrl = new URL('http://localhost:5000/narrate');
+      narrationUrl.searchParams.append('speed', speed);
+      narrationUrl.searchParams.append('lang', lang);
+      if (apod.date && !apod.isFallback) {
+        narrationUrl.searchParams.append('date', apod.date);
+      }
+
+      const response = await fetch(narrationUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'audio/mpeg'
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to generate narration');
+      }
+
+      // Create blob URL for audio
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+
+      // Clean up previous audio if exists
+      if (audioRef.current) {
+        audioRef.current.pause();
+        if (audioRef.current.src && audioRef.current.src.startsWith('blob:')) {
+          URL.revokeObjectURL(audioRef.current.src);
+        }
+      }
+
+      // Create and configure new audio element
+      const audio = new Audio(audioUrl);
+      audioRef.current = audio;
+
+      // Set up comprehensive audio event listeners
+      audio.addEventListener('loadstart', () => {
+        console.log('🎵 Audio loading started');
+      });
+
+      audio.addEventListener('canplay', () => {
+        console.log('🎵 Audio ready to play');
+        setAudioLoading(false);
+      });
+
+      audio.addEventListener('loadeddata', () => {
+        console.log('🎵 Audio data loaded');
+      });
+
+      audio.addEventListener('play', () => {
+        setIsNarrating(true);
+        setAudioError(null);
+        console.log('🎵 Audio playback started');
+      });
+
+      audio.addEventListener('pause', () => {
+        console.log('🎵 Audio playback paused');
+        // Only stop if it's actually ended
+        if (audio.currentTime === audio.duration || audio.ended) {
+          setIsNarrating(false);
+          setNarrationProgress(0);
+        }
+      });
+
+      audio.addEventListener('ended', () => {
+        console.log('🎵 Audio playback ended');
+        setIsNarrating(false);
+        setNarrationProgress(100);
+        
+        // Clean up after playback
+        setTimeout(() => {
+          if (audioRef.current && audioRef.current.src.startsWith('blob:')) {
+            URL.revokeObjectURL(audioRef.current.src);
+          }
+          audioRef.current = null;
+          setNarrationProgress(0);
+        }, 1000);
+      });
+
+      audio.addEventListener('timeupdate', () => {
+        if (audio.duration > 0) {
+          const progress = (audio.currentTime / audio.duration) * 100;
+          setNarrationProgress(progress);
+        }
+      });
+
+      audio.addEventListener('error', (e) => {
+        console.error('🎵 Audio error:', e);
+        setAudioError('Playback failed');
+        setIsNarrating(false);
+        setAudioLoading(false);
+        setNarrationProgress(0);
+        
+        // Clean up on error
+        if (audioRef.current && audioRef.current.src.startsWith('blob:')) {
+          URL.revokeObjectURL(audioRef.current.src);
+        }
+        audioRef.current = null;
+      });
+
+      // Start playback
+      audio.play().catch(error => {
+        console.error('🎵 Failed to start playback:', error);
+        setAudioError('Failed to start playback');
+        setIsNarrating(false);
+        setAudioLoading(false);
+      });
+
+    } catch (error) {
+      console.error('🎵 Narration error:', error);
+      setAudioError(error.message || 'Failed to generate narration');
+      setIsNarrating(false);
+      setAudioLoading(false);
+      setNarrationProgress(0);
+    }
+  }, [apod]);
+
   // Initial load with retry logic
   useEffect(() => {
     const loadAPOD = async () => {
@@ -233,6 +397,18 @@ const Hero = () => {
       img.src = apod.hdurl || apod.url;
     }
   }, [apod]);
+
+  // Cleanup audio on unmount
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        if (audioRef.current.src && audioRef.current.src.startsWith('blob:')) {
+          URL.revokeObjectURL(audioRef.current.src);
+        }
+      }
+    };
+  }, []);
 
   return (
     <section id="home" className="hero">
@@ -496,12 +672,49 @@ const Hero = () => {
                       <p className="apod-description">
                         {apod.explanation}
                       </p>
-                      {/* Show if description was cleaned */}
-                      {apod.explanation !== apod.originalExplanation && (
-                        <div className="description-cleaned-indicator">
-                          <small style={{ color: 'rgba(255, 255, 255, 0.6)', fontStyle: 'italic' }}>
-                            ✨ Description optimized for better reading
-                          </small>
+                      
+                      {/* Voice Narration Controls */}
+                      {!apod.isFallback && (
+                        <div className="narration-controls">
+                          <button 
+                            className={`narration-btn ${isNarrating ? 'playing' : ''}`}
+                            onClick={() => handleNarration('normal', 'en')}
+                            disabled={audioLoading}
+                            title={isNarrating ? 'Stop narration' : 'Listen to narration'}
+                          >
+                            {audioLoading ? (
+                              <>
+                                <span className="spinner small"></span>
+                                <span>Loading...</span>
+                              </>
+                            ) : isNarrating ? (
+                              <>
+                                <span>🔊</span>
+                                <span>Stop Audio</span>
+                              </>
+                            ) : (
+                              <>
+                                <span>🎧</span>
+                                <span>Listen</span>
+                              </>
+                            )}
+                          </button>
+                          
+                          {(isNarrating || narrationProgress > 0) && (
+                            <div className="narration-progress">
+                              <div 
+                                className="progress-fill"
+                                style={{ width: `${narrationProgress}%` }}
+                              ></div>
+                            </div>
+                          )}
+                          
+                          {audioError && (
+                            <div className="audio-error">
+                              <span>⚠️</span>
+                              <span>{audioError}</span>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>

@@ -96,25 +96,24 @@
   border-radius: 50%;
   box-shadow: 0 0 8px #ffffff, 0 0 16px #87CEEB;
   animation: shootingStar 6s linear infinite;
-  z-index: 2; /* Comet head above tail */
+  z-index: 2;
 }
 
 .shooting-star::before {
   content: '';
   position: absolute;
   top: 50%;
-  right: 100%; /* Position tail behind the comet */
-  width: 200px; /* Much longer tail */
+  right: 100%;
+  width: 200px;
   height: 2px;
   background: linear-gradient(to left, rgba(255, 255, 255, 0.8) 0%, rgba(135, 206, 235, 0.6) 30%, rgba(255, 255, 255, 0.3) 70%, transparent 100%);
   transform: translateY(-50%);
   transform-origin: right center;
   animation: shootingStarTail 6s linear infinite;
-  z-index: 1; /* Tail behind comet head */
+  z-index: 1;
   border-radius: 1px;
 }
 
-/* Multiple shooting stars with different starting positions */
 .shooting-star:nth-child(1) {
   top: 10%;
   left: -50px;
@@ -517,6 +516,7 @@
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   opacity: 0;
   transform: translateY(20px) translateZ(0);
@@ -629,6 +629,7 @@
   align-items: center;
   justify-content: center;
   height: 300px;
+  background: rgba(255, 255, 255, 0.05);
   color: rgba(255, 255, 255, 0.6);
   font-size: 1.1rem;
 }
@@ -673,6 +674,76 @@
   line-height: 1.6;
   color: rgba(255, 255, 255, 0.85);
   margin: 0;
+}
+
+/* Voice Narration Controls */
+.narration-controls {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.narration-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  background: rgba(74, 144, 226, 0.2);
+  border: 1px solid rgba(74, 144, 226, 0.4);
+  border-radius: 20px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  font-weight: 500;
+  max-width: fit-content;
+}
+
+.narration-btn:hover:not(:disabled) {
+  background: rgba(74, 144, 226, 0.3);
+  border-color: rgba(74, 144, 226, 0.6);
+  transform: translateY(-2px);
+}
+
+.narration-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.narration-btn.playing {
+  background: rgba(255, 107, 107, 0.2);
+  border-color: rgba(255, 107, 107, 0.4);
+}
+
+.narration-btn.playing:hover {
+  background: rgba(255, 107, 107, 0.3);
+  border-color: rgba(255, 107, 107, 0.6);
+}
+
+.narration-progress {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 0.5rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4A90E2, #7B68EE);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.audio-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #FF6B6B;
+  font-size: 0.8rem;
+  margin-top: 0.5rem;
 }
 
 /* Enhanced APOD Actions */
@@ -1041,17 +1112,25 @@
   }
   
   .floating-elements {
-    display: none; /* Hide on mobile for better performance */
+    display: none;
   }
 
-  /* Reduce stars on mobile */
   .stars-layer .star:nth-child(n+50) {
     display: none;
   }
 
-  /* Shorter tails on mobile */
   .shooting-star::before {
     width: 100px;
+  }
+
+  .narration-controls {
+    align-items: stretch;
+  }
+
+  .narration-btn {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+    min-width: 100px;
   }
 }
 
@@ -1084,14 +1163,21 @@
     justify-content: center;
   }
 
-  /* Further reduce stars on small mobile */
   .stars-layer .star:nth-child(n+30) {
     display: none;
   }
 
-  /* Even shorter tails on small mobile */
   .shooting-star::before {
     width: 80px;
+  }
+
+  .narration-btn {
+    width: 100%;
+    padding: 0.7rem 1rem;
+  }
+
+  .narration-progress {
+    margin-top: 0.5rem;
   }
 }
 
@@ -1106,6 +1192,14 @@
   .floating-elements,
   .starfield {
     display: none;
+  }
+
+  .narration-btn.playing {
+    animation: none;
+  }
+  
+  .progress-fill::after {
+    animation: none;
   }
 }
 
@@ -1128,5 +1222,19 @@
   
   .starfield {
     opacity: 0.3;
+  }
+
+  .narration-controls {
+    border: 2px solid #fff;
+    background: rgba(0, 0, 0, 0.8);
+  }
+  
+  .narration-btn {
+    border: 2px solid #fff;
+  }
+  
+  .audio-error {
+    border: 2px solid #ff0000;
+    background: rgba(255, 0, 0, 0.2);
   }
 }
