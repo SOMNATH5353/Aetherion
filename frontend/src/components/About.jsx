@@ -1,169 +1,290 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './About.css';
 
 const About = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [stats, setStats] = useState({
     imagesCurated: 1,
-    usersInspired: 0,
+    totalVisitors: 0,
     galaxiesExplored: 50,
     lightYearsCovered: 1000000
   });
   const [apodData, setApodData] = useState(null);
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
+  const [visitorStats, setVisitorStats] = useState({
+    total: 0,
+    today: 0,
+    thisWeek: 0,
+    isNewVisitor: false
+  });
 
-  useEffect(() => {
-    // Trigger animation on component mount
-    const timer = setTimeout(() => {
-      setIsLoaded(true);
-    }, 100);
+  // Skills data
+  const skills = [
+    { name: 'React.js', level: 95, icon: '⚛️' },
+    { name: 'JavaScript/ES6+', level: 92, icon: '🚀' },
+    { name: 'CSS3 & Animation', level: 90, icon: '🎨' },
+    { name: 'NASA APIs', level: 88, icon: '🛰️' },
+    { name: 'Python/Flask', level: 85, icon: '🐍' },
+    { name: 'UI/UX Design', level: 83, icon: '💫' },
+    { name: 'Space Science', level: 80, icon: '🌌' },
+    { name: 'Data Visualization', level: 75, icon: '📊' }
+  ];
 
-    // Calculate real-time statistics
-    calculateRealTimeStats();
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  const calculateRealTimeStats = () => {
-    try {
-      // Calculate images curated based on days since project start
-      const projectStartDate = new Date('2025-06-08'); // Today as Day 1
-      const currentDate = new Date();
-      const daysDifference = Math.floor((currentDate - projectStartDate) / (1000 * 60 * 60 * 24)) + 1;
-      
-      // Images curated starts from 1 and increments daily
-      const imagesCurated = Math.max(daysDifference, 1);
-      
-      // Simulate users inspired based on images
-      const usersInspired = Math.floor(imagesCurated * 15.7); // Average engagement rate
-      
-      // Get stored stats from localStorage for persistence
-      const storedStats = localStorage.getItem('aetherionStats');
-      if (storedStats) {
-        const parsed = JSON.parse(storedStats);
-        setStats({
-          imagesCurated: imagesCurated,
-          usersInspired: Math.max(usersInspired, parsed.usersInspired || 0),
-          galaxiesExplored: parsed.galaxiesExplored || 50,
-          lightYearsCovered: parsed.lightYearsCovered || 1000000
-        });
-      } else {
-        setStats({
-          imagesCurated: imagesCurated,
-          usersInspired: usersInspired,
-          galaxiesExplored: 50,
-          lightYearsCovered: 1000000
-        });
-      }
-
-      // Store updated stats
-      localStorage.setItem('aetherionStats', JSON.stringify({
-        imagesCurated: imagesCurated,
-        usersInspired: usersInspired,
-        galaxiesExplored: 50,
-        lightYearsCovered: 1000000,
-        lastUpdated: currentDate.toISOString()
-      }));
-
-    } catch (error) {
-      console.error('Error calculating stats:', error);
+  // Timeline/missions data
+  const missions = [
+    {
+      year: '2025',
+      title: 'AETHERION Launch',
+      description: 'Official launch of AETHERION with daily APOD features, voice narration, and immersive space exploration.',
+      status: 'Active'
+    },
+    {
+      year: '2025',
+      title: 'Enhanced Analytics',
+      description: 'Implementation of real-time visitor tracking, comprehensive analytics dashboard, and engagement metrics.',
+      status: 'Active'
+    },
+    {
+      year: '2025',
+      title: 'Community Features',
+      description: 'Adding user favorites, sharing capabilities, and community-driven content exploration.',
+      status: 'Ongoing'
+    },
+    {
+      year: '2025',
+      title: 'AI Integration',
+      description: 'Advanced AI-powered content recommendations and intelligent space fact generation.',
+      status: 'Coming Soon'
+    },
+    {
+      year: '2026',
+      title: 'Mobile App',
+      description: 'Native mobile applications for iOS and Android with offline APOD viewing and AR features.',
+      status: 'Coming Soon'
     }
-  };
+  ];
 
-  // Fetch latest APOD with optimized loading
   useEffect(() => {
-    const fetchLatestAPOD = async () => {
-      try {
-        setImageLoading(true);
-        setImageError(false);
-
-        // Set timeout for 3 seconds
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Timeout')), 3000)
-        );
-
-        const fetchPromise = fetch('https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY');
-        
-        const response = await Promise.race([fetchPromise, timeoutPromise]);
-        const data = await response.json();
-        
-        // Preload image if it exists
-        if (data.url && data.media_type === 'image') {
-          const img = new Image();
-          img.onload = () => {
-            setApodData(data);
-            setImageLoading(false);
-          };
-          img.onerror = () => {
-            setImageError(true);
-            setImageLoading(false);
-            setApodData({ ...data, imageError: true });
-          };
-          img.src = data.url;
-        } else {
-          setApodData(data);
-          setImageLoading(false);
-        }
-      } catch (error) {
-        console.error('Error fetching APOD:', error);
-        setImageError(true);
-        setImageLoading(false);
-        // Set fallback data
-        setApodData({
-          title: "Image Loading...",
-          date: new Date().toISOString().split('T')[0],
-          explanation: "Loading latest cosmic discovery from NASA...",
-          imageError: true
-        });
-      }
-    };
-
+    setIsLoaded(true);
+    initializeVisitorTracking();
+    calculateRealTimeStats();
     fetchLatestAPOD();
   }, []);
 
-  const missions = [
-    {
-      title: "Daily Cosmic Discovery",
-      description: "Curating NASA's most breathtaking astronomical images daily",
-      year: "2024",
-      status: "Active"
-    },
-    {
-      title: "Educational Outreach",
-      description: "Making space science accessible to everyone through modern web technology",
-      year: "2024",
-      status: "Ongoing"
-    },
-    {
-      title: "Interactive Space Experience",
-      description: "Enhanced user interface with real-time space data visualization",
-      year: "2025",
-      status: "Coming Soon"
+  // Initialize visitor tracking
+  const initializeVisitorTracking = async () => {
+    try {
+      const visitorId = getOrCreateVisitorId();
+      const sessionId = generateSessionId();
+      
+      // Enhanced visitor data collection
+      const visitorData = {
+        visitor_id: visitorId,
+        session_id: sessionId,
+        page_path: '/about',
+        referrer: document.referrer,
+        screen_resolution: `${screen.width}x${screen.height}`,
+        viewport_size: `${window.innerWidth}x${window.innerHeight}`,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        language: navigator.language,
+        color_depth: screen.colorDepth,
+        device_memory: navigator.deviceMemory || 'unknown',
+        connection_type: getConnectionType(),
+        user_agent: navigator.userAgent
+      };
+
+      // Track the visit
+      const response = await fetch('http://localhost:5000/analytics/track/enhanced-page-view', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Visitor-ID': visitorId,
+          'X-Session-ID': sessionId
+        },
+        body: JSON.stringify(visitorData)
+      });
+
+      if (response.ok) {
+        const trackingResult = await response.json();
+        console.log('✅ Visitor tracking initialized:', trackingResult);
+        
+        // Update visitor stats from response
+        setVisitorStats(prev => ({
+          ...prev,
+          total: trackingResult.totalVisitors || 0,
+          isNewVisitor: trackingResult.isNewVisitor || false
+        }));
+      }
+    } catch (error) {
+      console.error('❌ Error initializing visitor tracking:', error);
     }
-  ];
+  };
 
-  const skills = [
-    { name: "React.js", level: 95, icon: "⚛️" },
-    { name: "JavaScript", level: 90, icon: "🟨" },
-    { name: "CSS3", level: 88, icon: "🎨" },
-    { name: "NASA APIs", level: 85, icon: "🛰️" },
-    { name: "Responsive Design", level: 92, icon: "📱" },
-    { name: "Space Knowledge", level: 80, icon: "🌌" }
-  ];
+  const getOrCreateVisitorId = () => {
+    let visitorId = localStorage.getItem('aetherion_visitor_id');
+    if (!visitorId) {
+      visitorId = `visitor_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      localStorage.setItem('aetherion_visitor_id', visitorId);
+    }
+    return visitorId;
+  };
 
+  const generateSessionId = () => {
+    return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  };
+
+  const getConnectionType = () => {
+    if ('connection' in navigator) {
+      return navigator.connection.effectiveType || 'unknown';
+    }
+    return 'unknown';
+  };
+
+  // Fetch real-time cumulative statistics
+  const calculateRealTimeStats = async () => {
+    try {
+      // Get cumulative stats from backend
+      const response = await fetch('http://localhost:5000/analytics/cumulative-stats');
+      if (response.ok) {
+        const cumulativeData = await response.json();
+        
+        console.log('📊 Fetched cumulative stats:', cumulativeData);
+        
+        // Use real cumulative data
+        setStats({
+          imagesCurated: cumulativeData.cumulative.daysSinceLaunch || 1,
+          totalVisitors: cumulativeData.cumulative.totalUniqueVisitors || 0,
+          galaxiesExplored: Math.min(50 + Math.floor((cumulativeData.cumulative.totalUniqueVisitors || 0) / 20), 200),
+          lightYearsCovered: Math.min(1000000 + ((cumulativeData.cumulative.totalPageViews || 0) * 1000), 50000000)
+        });
+
+        // Update visitor stats
+        setVisitorStats(prev => ({
+          ...prev,
+          total: cumulativeData.cumulative.totalUniqueVisitors || 0,
+          today: cumulativeData.recent24h.visitors || 0,
+          thisWeek: Math.round((cumulativeData.averages.visitorsPerDay || 0) * 7)
+        }));
+
+        // Store in localStorage for offline use
+        localStorage.setItem('aetherionRealStats', JSON.stringify({
+          ...cumulativeData,
+          lastUpdated: new Date().toISOString()
+        }));
+      } else {
+        throw new Error('Failed to fetch real stats');
+      }
+    } catch (error) {
+      console.error('❌ Error fetching real stats, using fallback:', error);
+      
+      // Fallback to stored data or calculated stats
+      const storedStats = localStorage.getItem('aetherionRealStats');
+      if (storedStats) {
+        try {
+          const parsed = JSON.parse(storedStats);
+          setStats({
+            imagesCurated: parsed.cumulative?.daysSinceLaunch || 1,
+            totalVisitors: parsed.cumulative?.totalUniqueVisitors || 0,
+            galaxiesExplored: 50 + Math.floor((parsed.cumulative?.totalUniqueVisitors || 0) / 20),
+            lightYearsCovered: 1000000 + ((parsed.cumulative?.totalPageViews || 0) * 1000)
+          });
+        } catch (parseError) {
+          console.error('Error parsing stored stats:', parseError);
+          useFallbackStats();
+        }
+      } else {
+        useFallbackStats();
+      }
+    }
+  };
+
+  const useFallbackStats = () => {
+    // Fallback to calculated stats based on project timeline
+    const projectStartDate = new Date('2025-06-08');
+    const currentDate = new Date();
+    const daysDifference = Math.floor((currentDate - projectStartDate) / (1000 * 60 * 60 * 24)) + 1;
+    
+    setStats({
+      imagesCurated: Math.max(daysDifference, 1),
+      totalVisitors: Math.max(Math.floor(daysDifference * 15.7), 1), // Estimated growth
+      galaxiesExplored: 50,
+      lightYearsCovered: 1000000
+    });
+  };
+
+  // Fetch latest APOD data for preview
+  const fetchLatestAPOD = async () => {
+    try {
+      setImageLoading(true);
+      const response = await fetch('http://localhost:5000/apod');
+      if (response.ok) {
+        const data = await response.json();
+        setApodData(data);
+        setImageError(false);
+      } else {
+        throw new Error('Failed to fetch APOD');
+      }
+    } catch (error) {
+      console.error('Error fetching APOD:', error);
+      setImageError(true);
+      // Fallback APOD data
+      setApodData({
+        title: "Cosmic Discovery Awaits",
+        date: new Date().toISOString().split('T')[0],
+        explanation: "Experience the latest astronomical discoveries through NASA's daily featured content. Each day brings new wonders from across the universe.",
+        url: null,
+        media_type: 'image'
+      });
+    } finally {
+      setImageLoading(false);
+    }
+  };
+
+  // Track APOD interaction
+  const trackAPODInteraction = async (action) => {
+    try {
+      const visitorId = localStorage.getItem('aetherion_visitor_id');
+      const sessionId = generateSessionId();
+      
+      await fetch('http://localhost:5000/analytics/track/apod-interaction', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Visitor-ID': visitorId,
+          'X-Session-ID': sessionId
+        },
+        body: JSON.stringify({
+          visitor_id: visitorId,
+          session_id: sessionId,
+          action: action,
+          apod_date: apodData?.date || new Date().toISOString().split('T')[0],
+          additional_data: {
+            title: apodData?.title,
+            page: 'about',
+            timestamp: Date.now()
+          }
+        })
+      });
+    } catch (error) {
+      console.error('Error tracking APOD interaction:', error);
+    }
+  };
+
+  // Format large numbers
   const formatNumber = (num) => {
     if (num >= 1000000) {
-      return (num / 1000000).toFixed(1) + 'M+';
-    } else if (num >= 1000) {
-      return (num / 1000).toFixed(1) + 'K+';
+      return (num / 1000000).toFixed(1) + 'M';
     }
-    return num.toString();
+    if (num >= 1000) {
+      return (num / 1000).toFixed(1) + 'K';
+    }
+    return num.toLocaleString();
   };
 
   return (
     <main className={`about-page ${isLoaded ? 'loaded' : ''}`}>
-      {/* About Hero Section */}
+      {/* Hero Section */}
       <section className="about-hero">
         <div className="about-hero-container">
           <div className="about-hero-content">
@@ -244,7 +365,7 @@ const About = () => {
         <div className="container">
           <h2 className="section-title">Real-time Impact</h2>
           <p className="section-subtitle">
-            Live statistics powered by real data from the frontend
+            Live statistics showing AETHERION's reach across the cosmos
           </p>
           
           <div className="stats-grid">
@@ -263,11 +384,11 @@ const About = () => {
 
             <div className="stat-card realtime" data-aos="fade-up" data-aos-delay="100">
               <div className="stat-icon">👥</div>
-              <div className="stat-number" data-target={stats.usersInspired}>
-                {formatNumber(stats.usersInspired)}
+              <div className="stat-number" data-target={stats.totalVisitors}>
+                {formatNumber(stats.totalVisitors)}
               </div>
-              <div className="stat-label">Users Inspired</div>
-              <div className="stat-description">Calculated from engagement metrics</div>
+              <div className="stat-label">Total Cosmic Explorers</div>
+              <div className="stat-description">Unique visitors who've explored AETHERION</div>
               <div className="realtime-indicator">
                 <span className="pulse-dot"></span>
                 LIVE
@@ -289,7 +410,36 @@ const About = () => {
             </div>
           </div>
 
-          {/* Optimized Latest NASA Data Section */}
+          {/* Visitor Insights */}
+          <div className="visitor-insights">
+            <h3>👥 Visitor Insights</h3>
+            <div className="insights-grid">
+              <div className="insight-item">
+                <span className="insight-value">{formatNumber(visitorStats.total)}</span>
+                <span className="insight-label">Total Visitors</span>
+                <span className="insight-desc">All-time unique explorers</span>
+              </div>
+              <div className="insight-item">
+                <span className="insight-value">{formatNumber(visitorStats.today)}</span>
+                <span className="insight-label">Today's Visitors</span>
+                <span className="insight-desc">New cosmic journeys started</span>
+              </div>
+              <div className="insight-item">
+                <span className="insight-value">{formatNumber(visitorStats.thisWeek)}</span>
+                <span className="insight-label">This Week</span>
+                <span className="insight-desc">Weekly space explorers</span>
+              </div>
+              <div className="insight-item">
+                <span className="insight-value">{visitorStats.isNewVisitor ? 'Welcome!' : 'Welcome Back!'}</span>
+                <span className="insight-label">Your Status</span>
+                <span className="insight-desc">
+                  {visitorStats.isNewVisitor ? 'First time explorer' : 'Returning astronaut'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Live Data Demo */}
           <div className="live-data-demo">
             <h3>Latest NASA Data</h3>
             {imageLoading ? (
@@ -307,6 +457,15 @@ const About = () => {
                   <p className="apod-desc">
                     {apodData?.explanation?.substring(0, 150) || "Description loading..."}...
                   </p>
+                  <button 
+                    className="apod-preview-btn"
+                    onClick={() => {
+                      trackAPODInteraction('preview_viewed');
+                      window.location.href = '/';
+                    }}
+                  >
+                    Explore Today's Discovery →
+                  </button>
                 </div>
                 
                 <div className="apod-thumb">
@@ -316,6 +475,7 @@ const About = () => {
                       alt={apodData.title}
                       loading="lazy"
                       onError={() => setImageError(true)}
+                      onClick={() => trackAPODInteraction('thumbnail_clicked')}
                     />
                   ) : (
                     <div className="image-placeholder">
@@ -358,7 +518,7 @@ const About = () => {
         </div>
       </section>
 
-      {/* Projects Timeline */}
+      {/* Timeline Section */}
       <section className="timeline-section">
         <div className="container">
           <h2 className="section-title">Development Timeline</h2>
@@ -381,7 +541,7 @@ const About = () => {
         </div>
       </section>
 
-      {/* Technology Stack with Satellite Animation */}
+      {/* Technology Section */}
       <section className="technology-section">
         <div className="container">
           <div className="technology-content">
@@ -415,7 +575,7 @@ const About = () => {
                 </li>
                 <li>
                   <span className="feature-icon">📊</span>
-                  Live statistics and data tracking
+                  Live visitor tracking and analytics
                 </li>
               </ul>
             </div>
@@ -432,13 +592,13 @@ const About = () => {
         </div>
       </section>
 
-      {/* Call to Action */}
+      {/* Call to Action Section */}
       <section className="cta-section">
         <div className="container">
           <div className="cta-content">
             <h2 className="cta-title">Ready to Explore the Universe?</h2>
             <p className="cta-description">
-              Join me on this cosmic journey and discover something new about space every day
+              Join {formatNumber(stats.totalVisitors)} cosmic explorers and discover something new about space every day
             </p>
             <div className="cta-buttons">
               <a href="/" className="cta-button primary">
