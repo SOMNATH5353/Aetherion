@@ -9,26 +9,11 @@ const Hero = () => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   
-  // Enhanced TTS states
-  const [isNarrating, setIsNarrating] = useState(false);
-  const [audioLoading, setAudioLoading] = useState(false);
-  const [audioError, setAudioError] = useState(null);
-  const [narrationProgress, setNarrationProgress] = useState(0);
-  const [selectedLanguage, setSelectedLanguage] = useState('en');
-  const [speechSpeed, setSpeechSpeed] = useState(1.0);
-  const [supportedLanguages, setSupportedLanguages] = useState([]);
-  const [showTTSControls, setShowTTSControls] = useState(false);
-  const [audioId, setAudioId] = useState(null);
-  
   // New effect states
   const [titleVisible, setTitleVisible] = useState(false);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [isTyping, setIsTyping] = useState(false);
-  const [cursorVisible, setCursorVisible] = useState(true);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  
-  // Audio reference
-  const audioRef = useRef(null);
 
   // Welcome text animation
   const welcomeWords = ['Welcome', 'to', 'the', 'infinite'];
@@ -88,13 +73,6 @@ const Hero = () => {
       }, 600);
       return () => clearTimeout(timer);
     }
-
-    // Cursor blinking
-    const cursorTimer = setInterval(() => {
-      setCursorVisible(prev => !prev);
-    }, 800);
-
-    return () => clearInterval(cursorTimer);
   }, [isTyping, currentWordIndex, welcomeWords.length]);
 
   // Fallback data for offline mode
@@ -105,8 +83,7 @@ const Hero = () => {
     date: new Date().toISOString().split('T')[0],
     media_type: "image",
     copyright: null,
-    isFallback: true,
-    tts_available: false
+    isFallback: true
   }), []);
 
   // Generate stars for background animation
@@ -144,37 +121,7 @@ const Hero = () => {
     return particles;
   }, []);
 
-  // Fetch supported TTS languages on component mount
-  useEffect(() => {
-    const fetchSupportedLanguages = async () => {
-      try {
-        console.log('🌍 Fetching supported TTS languages...');
-        const response = await fetch('http://localhost:5000/tts/languages');
-        if (response.ok) {
-          const data = await response.json();
-          setSupportedLanguages(data.supported_languages || []);
-          console.log('✅ TTS languages loaded:', data.supported_languages?.length);
-        }
-      } catch (error) {
-        console.error('❌ Failed to fetch TTS languages:', error);
-        // Set default languages if fetch fails
-        setSupportedLanguages([
-          { code: 'en', name: 'English', flag: '🇺🇸' },
-          { code: 'es', name: 'Spanish', flag: '🇪🇸' },
-          { code: 'fr', name: 'French', flag: '🇫🇷' },
-          { code: 'de', name: 'German', flag: '🇩🇪' },
-          { code: 'it', name: 'Italian', flag: '🇮🇹' },
-          { code: 'pt', name: 'Portuguese', flag: '🇵🇹' },
-          { code: 'ru', name: 'Russian', flag: '🇷🇺' },
-          { code: 'ja', name: 'Japanese', flag: '🇯🇵' }
-        ]);
-      }
-    };
-
-    fetchSupportedLanguages();
-  }, []);
-
-  // Enhanced APOD fetching with TTS integration
+  // APOD fetching
   const fetchAPOD = useCallback(async () => {
     const startTime = Date.now();
     
@@ -182,7 +129,7 @@ const Hero = () => {
       setLoading(true);
       setError(null);
       
-      console.log('🚀 Fetching APOD data with TTS support...');
+      console.log('🚀 Fetching APOD data...');
       
       // Create AbortController for timeout
       const controller = new AbortController();
@@ -226,18 +173,6 @@ const Hero = () => {
         data.explanation = cleanedExplanation;
       }
       
-      // Set audio ID if available
-      if (data.audio_id) {
-        setAudioId(data.audio_id);
-        console.log('🎵 Audio ID available:', data.audio_id);
-      }
-      
-      // Load TTS languages if available
-      if (data.supported_languages && data.supported_languages.length > 0) {
-        setSupportedLanguages(data.supported_languages);
-        console.log('🌍 TTS languages from APOD:', data.supported_languages.length);
-      }
-      
       setApod(data);
       setError(null);
       setRetryCount(0);
@@ -264,242 +199,6 @@ const Hero = () => {
     }
   }, [fallbackData, cleanDescription]);
 
-  // Enhanced TTS narration using new backend endpoints
-  const handleNarration = useCallback(async () => {
-    if (!apod || !apod.explanation) {
-      setAudioError('No content available for narration');
-      return;
-    }
-
-    // Stop current narration if playing
-    if (isNarrating && audioRef.current) {
-      console.log('🛑 Stopping current narration...');
-      
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      
-      if (audioRef.current.src && audioRef.current.src.startsWith('blob:')) {
-        URL.revokeObjectURL(audioRef.current.src);
-      }
-      
-      setIsNarrating(false);
-      setNarrationProgress(0);
-      setAudioError(null);
-      audioRef.current = null;
-      
-      console.log('✅ Narration stopped successfully');
-      return;
-    }
-
-    try {
-      setAudioLoading(true);
-      setAudioError(null);
-      setNarrationProgress(0);
-      
-      console.log('🎙️ Generating TTS narration...', {
-        language: selectedLanguage,
-        speed: speechSpeed,
-        textLength: apod.explanation.length,
-        audioId: audioId
-      });
-      
-      let ttsResponse;
-      
-      // Use hash-based generation if we have an audio_id
-      if (audioId) {
-        console.log('🔄 Using hash-based TTS generation...');
-        ttsResponse = await fetch('http://localhost:5000/tts/generate-by-hash', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            text_hash: audioId,
-            language: selectedLanguage,
-            speed: speechSpeed
-          })
-        });
-      } else {
-        // Fall back to direct text generation
-        console.log('📝 Using direct text TTS generation...');
-        ttsResponse = await fetch('http://localhost:5000/tts/generate', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            text: apod.explanation,
-            language: selectedLanguage,
-            speed: speechSpeed
-          })
-        });
-      }
-
-      if (!ttsResponse.ok) {
-        const errorData = await ttsResponse.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to generate TTS');
-      }
-
-      const ttsData = await ttsResponse.json();
-      console.log('✅ TTS generated:', ttsData);
-
-      // Fetch the audio file using the audio URL
-      const audioResponse = await fetch(`http://localhost:5000${ttsData.audio_url}`);
-      
-      if (!audioResponse.ok) {
-        throw new Error('Failed to fetch audio file');
-      }
-
-      // Create blob URL for audio
-      const audioBlob = await audioResponse.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-
-      // Clean up previous audio if exists
-      if (audioRef.current) {
-        audioRef.current.pause();
-        if (audioRef.current.src && audioRef.current.src.startsWith('blob:')) {
-          URL.revokeObjectURL(audioRef.current.src);
-        }
-      }
-
-      // Create and configure new audio element
-      const audio = new Audio(audioUrl);
-      audioRef.current = audio;
-
-      // Set up comprehensive audio event listeners
-      audio.addEventListener('loadstart', () => {
-        console.log('🎵 Audio loading started');
-      });
-
-      audio.addEventListener('canplay', () => {
-        console.log('🎵 Audio ready to play');
-        setAudioLoading(false);
-      });
-
-      audio.addEventListener('loadeddata', () => {
-        console.log('🎵 Audio data loaded');
-      });
-
-      audio.addEventListener('play', () => {
-        setIsNarrating(true);
-        setAudioError(null);
-        console.log('🎵 Audio playback started');
-      });
-
-      audio.addEventListener('pause', () => {
-        console.log('🎵 Audio playback paused');
-        if (audio.currentTime === audio.duration || audio.ended) {
-          setIsNarrating(false);
-          setNarrationProgress(0);
-        }
-      });
-
-      audio.addEventListener('ended', () => {
-        console.log('🎵 Audio playback ended');
-        setIsNarrating(false);
-        setNarrationProgress(100);
-        
-        setTimeout(() => {
-          if (audioRef.current && audioRef.current.src.startsWith('blob:')) {
-            URL.revokeObjectURL(audioRef.current.src);
-          }
-          audioRef.current = null;
-          setNarrationProgress(0);
-        }, 1000);
-      });
-
-      audio.addEventListener('timeupdate', () => {
-        if (audio.duration > 0) {
-          const progress = (audio.currentTime / audio.duration) * 100;
-          setNarrationProgress(progress);
-        }
-      });
-
-      audio.addEventListener('error', (e) => {
-        console.error('🎵 Audio error:', e);
-        setAudioError('Playback failed');
-        setIsNarrating(false);
-        setAudioLoading(false);
-        setNarrationProgress(0);
-        
-        if (audioRef.current && audioRef.current.src.startsWith('blob:')) {
-          URL.revokeObjectURL(audioRef.current.src);
-        }
-        audioRef.current = null;
-      });
-
-      // Start playback
-      audio.play().catch(error => {
-        console.error('🎵 Failed to start playback:', error);
-        setAudioError('Failed to start playback');
-        setIsNarrating(false);
-        setAudioLoading(false);
-      });
-
-    } catch (error) {
-      console.error('🎵 Narration error:', error);
-      setAudioError(error.message || 'Failed to generate narration');
-      setIsNarrating(false);
-      setAudioLoading(false);
-      setNarrationProgress(0);
-    }
-  }, [apod, selectedLanguage, speechSpeed, audioId]);
-
-  // Download audio narration
-  const handleDownloadAudio = useCallback(async () => {
-    if (!apod || !apod.explanation) return;
-
-    try {
-      console.log('📥 Downloading audio narration...');
-      
-      let ttsResponse;
-      
-      if (audioId) {
-        ttsResponse = await fetch('http://localhost:5000/tts/generate-by-hash', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            text_hash: audioId,
-            language: selectedLanguage,
-            speed: speechSpeed
-          })
-        });
-      } else {
-        ttsResponse = await fetch('http://localhost:5000/tts/generate', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            text: apod.explanation,
-            language: selectedLanguage,
-            speed: speechSpeed
-          })
-        });
-      }
-
-      if (ttsResponse.ok) {
-        const ttsData = await ttsResponse.json();
-        
-        // Use the download URL from the response
-        const downloadUrl = `http://localhost:5000${ttsData.download_url}`;
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.download = `APOD_Narration_${apod.date || 'latest'}.mp3`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        console.log('✅ Audio download initiated');
-      }
-    } catch (error) {
-      console.error('❌ Audio download failed:', error);
-      setAudioError('Download failed');
-    }
-  }, [apod, selectedLanguage, speechSpeed, audioId]);
-
   // Initial load with retry logic
   useEffect(() => {
     const loadAPOD = async () => {
@@ -520,10 +219,6 @@ const Hero = () => {
           setApod(cachedData);
           setLoading(false);
           setImageLoaded(true);
-          
-          if (cachedData.audio_id) {
-            setAudioId(cachedData.audio_id);
-          }
           
           return;
         } catch (e) {
@@ -600,18 +295,6 @@ const Hero = () => {
       img.src = apod.hdurl || apod.url;
     }
   }, [apod]);
-
-  // Cleanup audio on unmount
-  useEffect(() => {
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        if (audioRef.current.src && audioRef.current.src.startsWith('blob:')) {
-          URL.revokeObjectURL(audioRef.current.src);
-        }
-      }
-    };
-  }, []);
 
   return (
     <section id="home" className="hero">
@@ -743,7 +426,6 @@ const Hero = () => {
                       <span className="particle">⭐</span>
                     </span>
                   </span>
-                  <span className={`typing-cursor ${cursorVisible ? 'visible' : ''}`}>|</span>
                 </div>
               </h1>
             </div>
@@ -754,43 +436,36 @@ const Hero = () => {
             
             <p className="hero-description animate-fade-up-delay">
               Discover the cosmos through NASA's daily astronomy pictures, 
-              stunning space imagery, and immersive audio narrations that bring the universe to life.
+              stunning space imagery, and immersive experiences that bring the universe to life.
               <span className="description-accent"> Journey through galaxies, nebulae, and cosmic phenomena.</span>
             </p>
             
             <div className="hero-buttons animate-slide-up">
               <button 
-                className="btn-primary enhanced-btn"
+                className="btn-primary"
                 onClick={() => scrollToSection('apod-section')}
               >
                 <span className="btn-content">
                   <span className="btn-icon">🚀</span>
                   <span className="btn-text">Explore Universe</span>
                 </span>
-                <div className="btn-glow enhanced-glow"></div>
-                <div className="btn-particles">
-                  <span>✨</span>
-                  <span>⭐</span>
-                  <span>💫</span>
-                </div>
               </button>
               
               <button 
-                className="btn-secondary enhanced-btn-secondary"
+                className="btn-secondary"
                 onClick={() => scrollToSection('about')}
               >
                 <span className="btn-content">
                   <span className="btn-icon">📖</span>
                   <span className="btn-text">Learn More</span>
                 </span>
-                <div className="btn-ripple"></div>
               </button>
             </div>
             
             {/* Enhanced Connection Status */}
-            <div className="connection-status enhanced-status">
+            <div className="connection-status">
               {loading && (
-                <div className="status-indicator loading pulse-animation">
+                <div className="status-indicator loading">
                   <span className="status-dot loading-dot"></span>
                   <span className="status-text">
                     {retryCount > 0 ? (
@@ -810,23 +485,17 @@ const Hero = () => {
               )}
               
               {!loading && !error && apod && !apod.isFallback && (
-                <div className="status-indicator connected success-glow">
+                <div className="status-indicator connected">
                   <span className="status-dot connected-dot"></span>
                   <span className="status-text">
                     <span className="success-icon">✅</span>
                     Connected to NASA APOD
-                    {apod.tts_available && (
-                      <span className="tts-badge enhanced-badge">
-                        🎙️ TTS
-                        <span className="badge-glow"></span>
-                      </span>
-                    )}
                   </span>
                 </div>
               )}
               
               {!loading && apod && apod.isFallback && (
-                <div className="status-indicator offline offline-glow">
+                <div className="status-indicator offline">
                   <span className="status-dot offline-dot"></span>
                   <span className="status-text">
                     <span className="offline-icon">📱</span>
@@ -836,7 +505,7 @@ const Hero = () => {
               )}
               
               {error && !apod && (
-                <div className="status-indicator error error-pulse">
+                <div className="status-indicator error">
                   <span className="status-dot error-dot"></span>
                   <span className="status-text">
                     <span className="error-icon">⚠️</span>
@@ -851,7 +520,7 @@ const Hero = () => {
         {/* APOD Visual Section */}
         <div className="hero-visual-section" id="apod-section">
           <div className="apod-header">
-            <h2 className="apod-section-title enhanced-title">
+            <h2 className="apod-section-title">
               {loading ? (
                 <>
                   <span className="loading-icon-title">🌌</span>
@@ -869,11 +538,11 @@ const Hero = () => {
                 </>
               )}
             </h2>
-            <div className="title-underline enhanced-underline">
+            <div className="title-underline">
               <div className="underline-glow"></div>
             </div>
             {apod && !loading && (
-              <p className="apod-date-header enhanced-date">
+              <p className="apod-date-header">
                 {apod.isFallback ? (
                   <>
                     <span className="date-icon">🔄</span>
@@ -896,8 +565,8 @@ const Hero = () => {
 
           <div className="hero-visual">
             {loading && !apod && (
-              <div className="loading-container enhanced-loading">
-                <div className="loading-spinner cosmic-spinner">
+              <div className="loading-container">
+                <div className="loading-spinner">
                   <div className="spinner orbital"></div>
                   <div className="spinner-center">🌟</div>
                   <div className="orbit-particles">
@@ -906,12 +575,12 @@ const Hero = () => {
                     <div className="orbit-particle">⭐</div>
                   </div>
                 </div>
-                <p className="loading-text enhanced-loading-text">
+                <p className="loading-text">
                   <span className="loading-text-main">Fetching cosmic wonder from NASA...</span>
                   <span className="loading-text-sub">Preparing your journey through space</span>
                 </p>
-                <div className="loading-progress enhanced-progress">
-                  <div className="progress-bar cosmic-progress">
+                <div className="loading-progress">
+                  <div className="progress-bar">
                     <div className="progress-wave"></div>
                   </div>
                 </div>
@@ -919,13 +588,13 @@ const Hero = () => {
             )}
 
             {error && !apod && (
-              <div className="error-container enhanced-error">
-                <div className="error-icon cosmic-error">🌌</div>
+              <div className="error-container">
+                <div className="error-icon">🌌</div>
                 <h3 className="error-title">Connection Issue</h3>
                 <p className="error-text">{error}</p>
                 <div className="error-actions">
                   <button 
-                    className="retry-btn enhanced-retry"
+                    className="retry-btn"
                     onClick={handleRetry}
                     disabled={loading}
                   >
@@ -933,7 +602,6 @@ const Hero = () => {
                     <span className="retry-text">
                       {loading ? 'Retrying...' : 'Try Again'}
                     </span>
-                    <div className="retry-glow"></div>
                   </button>
                   <button 
                     className="btn-secondary"
@@ -947,14 +615,14 @@ const Hero = () => {
             )}
 
             {apod && (
-              <div className={`apod-container enhanced-apod ${imageLoaded ? 'loaded' : 'loading'} ${apod.isFallback ? 'fallback' : ''}`}>
-                <div className="apod-image-wrapper enhanced-wrapper">
+              <div className={`apod-container ${imageLoaded ? 'loaded' : 'loading'} ${apod.isFallback ? 'fallback' : ''}`}>
+                <div className="apod-image-wrapper">
                   {apod.media_type === 'image' ? (
                     <>
                       {!imageLoaded && !apod.isFallback && (
-                        <div className="image-loading-overlay enhanced-overlay">
+                        <div className="image-loading-overlay">
                           <div className="loading-spinner">
-                            <div className="spinner small cosmic-small"></div>
+                            <div className="spinner small"></div>
                           </div>
                           <p>Loading cosmic image...</p>
                         </div>
@@ -962,7 +630,7 @@ const Hero = () => {
                       <img 
                         src={apod.hdurl || apod.url} 
                         alt={apod.title} 
-                        className="apod-image enhanced-image"
+                        className="apod-image"
                         onLoad={handleImageLoad}
                         onError={handleImageError}
                         loading="eager"
@@ -970,10 +638,9 @@ const Hero = () => {
                           display: (!imageLoaded && !apod.isFallback) ? 'none' : 'block'
                         }}
                       />
-                      <div className="image-frame"></div>
                     </>
                   ) : apod.media_type === 'video' ? (
-                    <div className="apod-video-container enhanced-video">
+                    <div className="apod-video-container">
                       <iframe 
                         src={apod.url}
                         title={apod.title}
@@ -983,7 +650,7 @@ const Hero = () => {
                         onLoad={handleImageLoad}
                         loading="eager"
                       />
-                      <div className="video-overlay enhanced-video-overlay">
+                      <div className="video-overlay">
                         <span className="video-icon">▶️</span>
                         <p>Video Content</p>
                       </div>
@@ -995,24 +662,21 @@ const Hero = () => {
                     </div>
                   )}
                   
-                  <div className="image-overlay enhanced-image-overlay"></div>
-                  
                   {apod.isFallback && (
-                    <div className="fallback-overlay enhanced-fallback">
-                      <div className="fallback-badge enhanced-fallback-badge">
+                    <div className="fallback-overlay">
+                      <div className="fallback-badge">
                         <span>🔄</span>
                         <span>Preview Mode</span>
-                        <div className="fallback-glow"></div>
                       </div>
                     </div>
                   )}
                 </div>
                 
-                <div className="apod-info enhanced-info">
+                <div className="apod-info">
                   <div className="apod-title-section">
-                    <h3 className="apod-title enhanced-apod-title">{apod.title}</h3>
+                    <h3 className="apod-title">{apod.title}</h3>
                     {apod.copyright && (
-                      <p className="apod-copyright enhanced-copyright">
+                      <p className="apod-copyright">
                         📸 © {apod.copyright}
                       </p>
                     )}
@@ -1020,169 +684,41 @@ const Hero = () => {
                   
                   {apod.explanation && (
                     <div className="apod-description-container">
-                      <p className="apod-description enhanced-description">
+                      <p className="apod-description">
                         {apod.explanation}
                       </p>
-                      
-                      {/* Enhanced TTS Controls */}
-                      {!apod.isFallback && apod.tts_available !== false && (
-                        <div className="narration-controls enhanced-narration">
-                          <div className="narration-main-controls">
-                            <button 
-                              className={`narration-btn enhanced-narration-btn ${isNarrating ? 'playing' : ''}`}
-                              onClick={handleNarration}
-                              disabled={audioLoading}
-                              title={isNarrating ? 'Stop narration' : 'Listen to narration'}
-                            >
-                              {audioLoading ? (
-                                <>
-                                  <span className="spinner small"></span>
-                                  <span>Loading...</span>
-                                </>
-                              ) : isNarrating ? (
-                                <>
-                                  <span className="narration-icon playing">🔊</span>
-                                  <span>Stop Audio</span>
-                                  <div className="playing-wave"></div>
-                                </>
-                              ) : (
-                                <>
-                                  <span className="narration-icon">🎧</span>
-                                  <span>Listen</span>
-                                </>
-                              )}
-                              <div className="btn-pulse"></div>
-                            </button>
-                            
-                            <button 
-                              className="tts-settings-btn enhanced-settings"
-                              onClick={() => setShowTTSControls(!showTTSControls)}
-                              title="TTS Settings"
-                            >
-                              <span>⚙️</span>
-                              <div className="settings-glow"></div>
-                            </button>
-                            
-                            <button 
-                              className="download-audio-btn enhanced-download"
-                              onClick={handleDownloadAudio}
-                              title="Download Audio"
-                              disabled={audioLoading}
-                            >
-                              <span>📥</span>
-                              <div className="download-arrow"></div>
-                            </button>
-                          </div>
-                          
-                          {/* Enhanced TTS Settings Panel */}
-                          {showTTSControls && (
-                            <div className="tts-settings-panel enhanced-panel">
-                              <div className="panel-header">
-                                <span className="panel-icon">🎛️</span>
-                                <span>Audio Settings</span>
-                              </div>
-                              
-                              <div className="tts-setting">
-                                <label htmlFor="language-select">🌍 Language:</label>
-                                <select 
-                                  id="language-select"
-                                  value={selectedLanguage}
-                                  onChange={(e) => setSelectedLanguage(e.target.value)}
-                                  className="tts-select enhanced-select"
-                                >
-                                  {supportedLanguages.map(lang => (
-                                    <option key={lang.code} value={lang.code}>
-                                      {lang.flag} {lang.name}
-                                    </option>
-                                  ))}
-                                </select>
-                              </div>
-                              
-                              <div className="tts-setting">
-                                <label htmlFor="speed-select">⚡ Speed:</label>
-                                <select 
-                                  id="speed-select"
-                                  value={speechSpeed}
-                                  onChange={(e) => setSpeechSpeed(parseFloat(e.target.value))}
-                                  className="tts-select enhanced-select"
-                                >
-                                  <option value={0.7}>🐌 0.7x (Slow)</option>
-                                  <option value={1.0}>🚶 1.0x (Normal)</option>
-                                  <option value={1.3}>🏃 1.3x (Fast)</option>
-                                  <option value={1.5}>🚀 1.5x (Very Fast)</option>
-                                </select>
-                              </div>
-                            </div>
-                          )}
-                          
-                          {(isNarrating || narrationProgress > 0) && (
-                            <div className="narration-progress enhanced-progress">
-                              <div className="progress-container">
-                                <div 
-                                  className="progress-fill enhanced-fill"
-                                  style={{ width: `${narrationProgress}%` }}
-                                ></div>
-                                <div className="progress-glow"></div>
-                              </div>
-                              <span className="progress-text">
-                                <span className="progress-icon">🎵</span>
-                                {Math.round(narrationProgress)}%
-                              </span>
-                            </div>
-                          )}
-                          
-                          {audioError && (
-                            <div className="audio-error enhanced-audio-error">
-                              <span>⚠️</span>
-                              <span>{audioError}</span>
-                              <div className="error-pulse"></div>
-                            </div>
-                          )}
-                          
-                          {apod.tts_available && (
-                            <div className="tts-info enhanced-tts-info">
-                              <span>🎙️</span>
-                              <span>Multi-language narration available</span>
-                              <div className="info-shimmer"></div>
-                            </div>
-                          )}
-                        </div>
-                      )}
                     </div>
                   )}
                   
-                  <div className="apod-actions enhanced-actions">
+                  <div className="apod-actions">
                     {apod.hdurl && apod.hdurl !== apod.url && !apod.isFallback && (
                       <a 
                         href={apod.hdurl} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="hd-link enhanced-hd"
+                        className="hd-link"
                       >
                         <span>🔍</span>
                         <span>View HD Version</span>
-                        <div className="hd-glow"></div>
                       </a>
                     )}
                     
                     <button 
-                      className="share-btn enhanced-share"
+                      className="share-btn"
                       onClick={handleShare}
                     >
                       <span>🔗</span>
                       <span>Share</span>
-                      <div className="share-ripple"></div>
                     </button>
                     
                     <button 
-                      className="refresh-btn enhanced-refresh"
+                      className="refresh-btn"
                       onClick={handleRetry}
                       title="Refresh APOD"
                       disabled={loading}
                     >
-                      <span className={loading ? 'spinning enhanced-spin' : ''}>🔄</span>
+                      <span className={loading ? 'spinning' : ''}>🔄</span>
                       <span>{loading ? 'Loading...' : 'Refresh'}</span>
-                      <div className="refresh-glow"></div>
                     </button>
                   </div>
                 </div>
@@ -1192,26 +728,26 @@ const Hero = () => {
         </div>
 
         {/* Enhanced Floating Elements */}
-        <div className="floating-elements enhanced-floating">
-          <div className="float-element e1 enhanced-float">✦</div>
-          <div className="float-element e2 enhanced-float">★</div>
-          <div className="float-element e3 enhanced-float">✧</div>
-          <div className="float-element e4 enhanced-float">⭐</div>
-          <div className="float-element e5 enhanced-float">✨</div>
-          <div className="float-element e6 enhanced-float">🌟</div>
-          <div className="float-element e7 enhanced-float">🌙</div>
-          <div className="float-element e8 enhanced-float">🪐</div>
-          <div className="float-element e9 enhanced-float">☄️</div>
-          <div className="float-element e10 enhanced-float">🌠</div>
+        <div className="floating-elements">
+          <div className="float-element e1">✦</div>
+          <div className="float-element e2">★</div>
+          <div className="float-element e3">✧</div>
+          <div className="float-element e4">⭐</div>
+          <div className="float-element e5">✨</div>
+          <div className="float-element e6">🌟</div>
+          <div className="float-element e7">🌙</div>
+          <div className="float-element e8">🪐</div>
+          <div className="float-element e9">☄️</div>
+          <div className="float-element e10">🌠</div>
         </div>
 
         {/* Enhanced Scroll Indicator */}
-        <div className="scroll-indicator enhanced-scroll">
+        <div className="scroll-indicator">
           <div className="scroll-container">
-            <div className="scroll-arrow enhanced-arrow"></div>
+            <div className="scroll-arrow"></div>
             <div className="scroll-pulse"></div>
           </div>
-          <span className="scroll-text enhanced-scroll-text">
+          <span className="scroll-text">
             <span className="scroll-icon">👇</span>
             Scroll to explore more wonders
           </span>

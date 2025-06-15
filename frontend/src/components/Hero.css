@@ -220,25 +220,10 @@
 
 .hero-brand {
   position: relative;
-  background: linear-gradient(135deg, #9966ff, #663399, #8b4bcc, #b366ff);
-  background-size: 400% 400%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: brandGradientFlow 4s ease-in-out infinite;
+  color: #ffffff;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
   letter-spacing: 3px;
   text-transform: uppercase;
-}
-
-@keyframes brandGradientFlow {
-  0%, 100% { 
-    background-position: 0% 50%;
-    transform: scale(1);
-  }
-  50% { 
-    background-position: 100% 50%;
-    transform: scale(1.05);
-  }
 }
 
 .brand-glow {
@@ -247,7 +232,7 @@
   left: -5px;
   right: -5px;
   bottom: -5px;
-  background: linear-gradient(45deg, #9966ff, #663399);
+  background: linear-gradient(45deg, #ffffff, #f0f0f0);
   filter: blur(15px);
   opacity: 0.3;
   z-index: -1;
@@ -278,22 +263,6 @@
 @keyframes particleFloat {
   0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.7; }
   50% { transform: translateY(-10px) rotate(180deg); opacity: 1; }
-}
-
-.typing-cursor {
-  color: #9966ff;
-  font-weight: 400;
-  opacity: 0;
-  animation: cursorBlink 1s infinite;
-}
-
-.typing-cursor.visible {
-  opacity: 1;
-}
-
-@keyframes cursorBlink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0; }
 }
 
 .hero-subtitle {
@@ -450,23 +419,6 @@
 @keyframes statusPulse {
   0%, 100% { opacity: 0.5; transform: scale(1); }
   50% { opacity: 1; transform: scale(1.2); }
-}
-
-.tts-badge {
-  position: relative;
-  background: linear-gradient(135deg, #9333EA, #7C3AED);
-  color: #ffffff;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  margin-left: 0.5rem;
-  animation: badgePulse 3s ease-in-out infinite;
-}
-
-@keyframes badgePulse {
-  0%, 100% { opacity: 0.8; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.05); }
 }
 
 .loading-wave {
@@ -773,7 +725,7 @@
 }
 
 .apod-container {
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 20px;
@@ -939,197 +891,6 @@
   color: rgba(255, 255, 255, 0.8);
   margin-bottom: 1.5rem;
   text-align: justify;
-}
-
-.narration-controls {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 1rem;
-  margin-bottom: 1rem;
-}
-
-.narration-main-controls {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-}
-
-.narration-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.8rem 1.2rem;
-  background: linear-gradient(135deg, #9333EA, #7C3AED);
-  color: #ffffff;
-  border: none;
-  border-radius: 8px;
-  font-family: 'Rajdhani', sans-serif;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-  flex: 1;
-  min-width: 120px;
-}
-
-.narration-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(147, 51, 234, 0.3);
-}
-
-.narration-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.narration-btn.playing {
-  background: linear-gradient(135deg, #EF4444, #DC2626);
-  animation: playingPulse 2s ease-in-out infinite;
-}
-
-@keyframes playingPulse {
-  0%, 100% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.3); }
-  50% { box-shadow: 0 0 30px rgba(239, 68, 68, 0.6); }
-}
-
-.tts-settings-btn, .download-audio-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 45px;
-  height: 45px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  color: #ffffff;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.tts-settings-btn:hover, .download-audio-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
-}
-
-.tts-settings-panel {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 1rem;
-  margin-top: 1rem;
-  backdrop-filter: blur(10px);
-}
-
-.tts-setting {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.tts-setting:last-child {
-  margin-bottom: 0;
-}
-
-.tts-setting label {
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.8);
-  font-weight: 600;
-}
-
-.tts-select {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 6px;
-  padding: 0.5rem;
-  color: #ffffff;
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 0.9rem;
-  backdrop-filter: blur(10px);
-}
-
-.tts-select:focus {
-  outline: none;
-  border-color: #9966ff;
-  box-shadow: 0 0 10px rgba(153, 102, 255, 0.3);
-}
-
-.tts-select option {
-  background: #1a1a1a;
-  color: #ffffff;
-}
-
-.narration-progress {
-  position: relative;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 0.8rem;
-  margin-bottom: 0.5rem;
-}
-
-.progress-container {
-  position: relative;
-  width: 100%;
-  height: 6px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
-  overflow: hidden;
-  margin-bottom: 0.5rem;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #9966ff, #663399);
-  border-radius: 3px;
-  transition: width 0.3s ease;
-  position: relative;
-}
-
-.progress-text {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 0.9rem;
-  color: #9966ff;
-  font-weight: 600;
-}
-
-.audio-error {
-  background: rgba(255, 0, 0, 0.1);
-  border: 1px solid rgba(255, 0, 0, 0.3);
-  border-radius: 6px;
-  padding: 0.5rem;
-  color: #FF6B6B;
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  position: relative;
-  overflow: hidden;
-}
-
-.tts-info {
-  background: rgba(153, 102, 255, 0.1);
-  border: 1px solid rgba(153, 102, 255, 0.3);
-  border-radius: 6px;
-  padding: 0.5rem;
-  color: #9966ff;
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 0.8rem;
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  position: relative;
-  overflow: hidden;
 }
 
 .apod-actions {
@@ -1439,16 +1200,6 @@
     font-size: 1.3rem;
   }
   
-  .narration-main-controls {
-    flex-direction: column;
-    gap: 0.8rem;
-  }
-  
-  .narration-btn {
-    width: 100%;
-    justify-content: center;
-  }
-  
   .apod-actions {
     flex-direction: column;
     align-items: center;
@@ -1532,10 +1283,6 @@
     line-height: 1.5;
   }
   
-  .tts-settings-panel {
-    padding: 0.8rem;
-  }
-  
   .scroll-indicator {
     bottom: 1rem;
     scale: 0.8;
@@ -1583,7 +1330,6 @@ a:focus {
     display: none;
   }
   
-  .narration-controls, .apod-actions {
+  .apod-actions {
     display: none;
-  }
-}
+  }}
